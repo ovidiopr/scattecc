@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-#testing git
-=======
 //**********************************************************************************//
 //    Copyright (C) 2015  Ovidio Pena <ovidio@bytesfall.com>                        //
 //                                                                                  //
@@ -2058,4 +2055,4 @@ namespace eccmie {
     }  // end of for all field coordinates
   }  //  end of EccentricMie::RunFieldCalculation()
 }  // end of namespace eccmie
->>>>>>> 7c2b38db292aef0e49e556bff0eef55a89b11214
+

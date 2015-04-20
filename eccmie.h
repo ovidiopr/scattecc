@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-la mierda colora
-=======
 //**********************************************************************************//
 //    Copyright (C) 2015  Ovidio Pena <ovidio@bytesfall.com>                        //
 //                                                                                  //
@@ -186,4 +183,3 @@ namespace eccmie {
   };  // end of class EccentricMie
 
 }  // end of namespace eccmie
->>>>>>> 7c2b38db292aef0e49e556bff0eef55a89b11214
