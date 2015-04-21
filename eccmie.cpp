@@ -536,13 +536,13 @@ namespace eccmie {
     calcNstop();  // Set initial nmax_ value
     for (unsigned int i = first_layer; i < x.size(); i++) {
       if (static_cast<int>(i) > PEC_layer_position_)  // static_cast used to avoid warning
-        ri = round(std::std::abs(x[i]*m[i]));
+        ri = round(std::abs(x[i]*m[i]));
       else
         ri = 0;
       nmax_ = std::max(nmax_, ri);
       // first layer is pec, if pec is present
       if ((i > first_layer) && (static_cast<int>(i - 1) > PEC_layer_position_))
-        riM1 = round(std::std::abs(x[i - 1]* m[i]));
+        riM1 = round(std::abs(x[i - 1]* m[i]));
       else
         riM1 = 0;
       nmax_ = std::max(nmax_, riM1);
@@ -621,7 +621,7 @@ namespace eccmie {
       D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
     }
 
-    if (std::std::abs(D1[0]) > 100000.0)
+    if (std::abs(D1[0]) > 100000.0)
       throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
@@ -872,9 +872,9 @@ namespace eccmie {
     x3 = refractive_index_inc_*size_param_inc_;
 
     // # of iterations for the big sphere and loops
-    nmax_ = round(std::abs(x0) + 4.0*std::pow(std::std::abs(x0), 1.0/3.0) + 2.0);
+    nmax_ = round(std::abs(x0) + 4.0*std::pow(std::abs(x0), 1.0/3.0) + 2.0);
     // # of iterations for the small sphere and loops
-    nsm = round(std::abs(x2) + 4.0*std::pow(std::std::abs(x2), 1.0/3.0) + 2.0);
+    nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
 
     int i, j, jj, jjj, n, m, mn, np, nmax_, nsm, ntot, nel;
     double Qext1, Qsca1, Qabs, gg, f_angle, angle_inc__0, tau, pie, dd;
@@ -915,7 +915,7 @@ namespace eccmie {
     std::vector<std::complex<double> > a_TE(nmax_ + 1), b_TE(nmax_ + 1);
     // MUELLER MATRIX
     std::vector<double > mm(4);
-    for (int n = 0; n <= 4; n++) {
+    for (int n = 0; n < 4; n++) {
       mm[n].resize(4);
     }
 
@@ -1057,7 +1057,7 @@ namespace eccmie {
   if (xd == 0.0)
     nsm = 2;
   else
-    nsm = round(std::abs(xd) + 4.0*std::abs(xd)**(1/3) + 2.0);
+    nsm = round(std::abs(xd) + 4.0*std::pow(std::abs(xd),(1/3)) + 2.0);
 
   bessel(xd, Jb_d);
   // ...........................................
@@ -1132,7 +1132,7 @@ namespace eccmie {
         pie = m*legpol2[i]/sin(ai*pi/180.0);
       }
       if (i > 0) {
-        c = (_i**i)/(i*i + i);
+        c = std::pow(_i,i)/(i*i + i);
         b_TE[i] = -c*pie;
         a_TE[i] = c*tau;
       }
@@ -1381,7 +1381,6 @@ namespace eccmie {
   Qext = Qext1/x0/x0;
   Qsca = Qsca1/x0/x0;
   Qabs = Qext - Qsca;
-//  ShowMessage('Qext = ' + FloatToStr(Qext) + ', Qsca = ' + FloatToStr(Qsca) + ', Qabs = ' + FloatToStr(Qabs));
 
   // COMMENT THIS BLOCK OUT IF YOU DON'T WANT TO FIND
   // THE ASYMMETRY PARAMETER.  THIS FIND_G SUBROUTINE
@@ -1651,9 +1650,9 @@ namespace eccmie {
     for (int n = 0; n < nmax_; ++n) {
 //      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
 //	     real(bln_[0][n]), imag(bln_[0][n]));
-      if (std::std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      if (std::std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
+      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
     }
 
@@ -1783,9 +1782,9 @@ namespace eccmie {
     for (int n = 0; n < nmax_; ++n) {
 //      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
 //	     real(bln_[0][n]), imag(bln_[0][n]));
-      if (std::std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
+      if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      if (std::std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
+      if (std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
       else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
     }
 
