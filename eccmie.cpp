@@ -1,5 +1,6 @@
 //**********************************************************************************//
 //    Copyright (C) 2015  Ovidio Pena <ovidio@bytesfall.com>                        //
+//    Copyright (C) 2015  V. R. Iglesias <viglesias@gmail.com>                      //
 //                                                                                  //
 //    This file is part of scattecc                                                 //
 //                                                                                  //
@@ -57,10 +58,13 @@ namespace eccmie {
   // and amplitudes.                                                                  //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send -1                          //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   xi: Size parameter of the inclusion sphere                                     //
+  //   xh: Size parameter of the host sphere                                          //
+  //   pl: Index of PEC layer (None: -1; Inclusion: 0; Host: 1)                       //
+  //   mi: Relative refractive index of the inclusion sphere                          //
+  //   mh: Relative refractive index of the host sphere                               //
+  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
   //          amplitudes will be calculated                                           //
@@ -81,33 +85,35 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int eccMie(double& xi, double& xh, const int pl, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
 
-    if (x.size() != L || m.size() != L)
-        throw std::invalid_argument("Declared number of layers do not fit x and m!");
     if (Theta.size() != nTheta)
         throw std::invalid_argument("Declared number of sample for Theta is not correct!");
     try {
-      EccentricMie multi_layer_mie;
-      multi_layer_mie.SetLayersSize(x);
-      multi_layer_mie.SetLayersIndex(m);
-      multi_layer_mie.SetAngles(Theta);
-      multi_layer_mie.SetPECLayer(pl);
-      multi_layer_mie.SetMaxTerms(nmax);
+      EccentricMie eccentric_mie;
+      eccentric_mie.SetIncSize(xi);
+      eccentric_mie.SetHostSize(xh);
+      eccentric_mie.SetIncIndex(mi);
+      eccentric_mie.SetHostIndex(mh);
+      eccentric_mie.SetIncShift(dx);
+      eccentric_mie.SetIncAngle(alpha);
+      eccentric_mie.SetAngles(Theta);
 
-      multi_layer_mie.RunMieCalculation();
+      eccentric_mie.SetPECLayer(pl);
 
-      *Qext = multi_layer_mie.GetQext();
-      *Qsca = multi_layer_mie.GetQsca();
-      *Qabs = multi_layer_mie.GetQabs();
-      *Qbk = multi_layer_mie.GetQbk();
-      *Qpr = multi_layer_mie.GetQpr();
-      *g = multi_layer_mie.GetAsymmetryFactor();
-      *Albedo = multi_layer_mie.GetAlbedo();
-      S1 = multi_layer_mie.GetS1();
-      S2 = multi_layer_mie.GetS2();
+      eccentric_mie.RunMieCalculation();
+
+      *Qext = eccentric_mie.GetQext();
+      *Qsca = eccentric_mie.GetQsca();
+      *Qabs = eccentric_mie.GetQabs();
+      *Qbk = eccentric_mie.GetQbk();
+      *Qpr = eccentric_mie.GetQpr();
+      *g = eccentric_mie.GetAsymmetryFactor();
+      *Albedo = eccentric_mie.GetAlbedo();
+      S1 = eccentric_mie.GetS1();
+      S2 = eccentric_mie.GetS2();
     } catch(const std::invalid_argument& ia) {
-      // Will catch if  multi_layer_mie fails or other errors.
+      // Will catch if  eccentric_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return -1;
@@ -117,15 +123,18 @@ namespace eccmie {
 
 
   //**********************************************************************************//
-  // This function is just a wrapper to call the full 'eccMie' function with fewer      //
+  // This function is just a wrapper to call the full 'eccMie' function with fewer    //
   // parameters, it is here mainly for compatibility with older versions of the       //
   // program. Also, you can use it if you neither have a PEC layer nor want to define //
   // any limit for the maximum number of terms.                                       //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   xi: Size parameter of the inclusion sphere                                     //
+  //   xh: Size parameter of the host sphere                                          //
+  //   mi: Relative refractive index of the inclusion sphere                          //
+  //   mh: Relative refractive index of the host sphere                               //
+  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
   //          amplitudes will be calculated                                           //
@@ -143,21 +152,24 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return eccmie::eccMie(L, -1, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  int eccMie(double& xi, double& xh, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+    return eccmie::eccMie(xi, xh, -1, mi, mh, dx, alpha, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
   //**********************************************************************************//
-  // This function is just a wrapper to call the full 'eccMie' function with fewer      //
+  // This function is just a wrapper to call the full 'eccMie' function with fewer    //
   // parameters, it is useful if you want to include a PEC layer but not a limit      //
   // for the maximum number of terms.                                                 //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send -1                          //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   xi: Size parameter of the inclusion sphere                                     //
+  //   xh: Size parameter of the host sphere                                          //
+  //   pl: Index of PEC layer (None: -1; Inclusion: 0; Host: 1)                       //
+  //   mi: Relative refractive index of the inclusion sphere                          //
+  //   mh: Relative refractive index of the host sphere                               //
+  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
   //          amplitudes will be calculated                                           //
@@ -175,20 +187,23 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(const unsigned int L, const int pl, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return eccmie::eccMie(L, pl, x, m, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  int eccMie(double& xi, double& xh, const int pl, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+    return eccmie::eccMie(xi, xh, pl, mi, mh, dx, alpha, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
   //**********************************************************************************//
-  // This function is just a wrapper to call the full 'eccMie' function with fewer      //
+  // This function is just a wrapper to call the full 'eccMie' function with fewer    //
   // parameters, it is useful if you want to include a limit for the maximum number   //
   // of terms but not a PEC layer.                                                    //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   xi: Size parameter of the inclusion sphere                                     //
+  //   xh: Size parameter of the host sphere                                          //
+  //   mi: Relative refractive index of the inclusion sphere                          //
+  //   mh: Relative refractive index of the host sphere                               //
+  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
   //          amplitudes will be calculated                                           //
@@ -209,8 +224,8 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(const unsigned int L, std::vector<double>& x, std::vector<std::complex<double> >& m, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return eccmie::eccMie(L, -1, x, m, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  int eccMie(double& xi, double& xh, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+    return eccmie::eccMie(xi, xh, -1, mi, mh, dx, alpha, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
@@ -219,10 +234,13 @@ namespace eccmie {
   // in the surroundings and inside (TODO) the particle.                              //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send 0 (zero)                    //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
+  //   xi: Size parameter of the inclusion sphere                                     //
+  //   xh: Size parameter of the host sphere                                          //
+  //   pl: Index of PEC layer (None: -1; Inclusion: 0; Host: 1)                       //
+  //   mi: Relative refractive index of the inclusion sphere                          //
+  //   mh: Relative refractive index of the host sphere                               //
+  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nmax: Maximum number of multipolar expansion terms to be used for the          //
   //         calculations. Only use it if you know what you are doing, otherwise      //
   //         set this parameter to 0 (zero) and the function will calculate it.       //
@@ -236,9 +254,7 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccField(const unsigned int L, const int pl, const std::vector<double>& x, const std::vector<std::complex<double> >& m, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
-    if (x.size() != L || m.size() != L)
-      throw std::invalid_argument("Declared number of layers do not fit x and m!");
+  int eccField(double& xi, double& xh, const int pl, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
         || E.size() != ncoord || H.size() != ncoord)
       throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
@@ -249,16 +265,22 @@ namespace eccmie {
       if (f.size() != 3)
         throw std::invalid_argument("Field H is not 3D!");
     try {
-      EccentricMie multi_layer_mie;
-      //multi_layer_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
-      multi_layer_mie.SetLayersSize(x);
-      multi_layer_mie.SetLayersIndex(m);
-      multi_layer_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
-      multi_layer_mie.RunFieldCalculation();
-      E = multi_layer_mie.GetFieldE();
-      H = multi_layer_mie.GetFieldH();
+      EccentricMie eccentric_mie;
+      eccentric_mie.SetIncSize(xi);
+      eccentric_mie.SetHostSize(xh);
+      eccentric_mie.SetIncIndex(mi);
+      eccentric_mie.SetHostIndex(mh);
+      eccentric_mie.SetIncShift(dx);
+      eccentric_mie.SetIncAngle(alpha);
+
+      //eccentric_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
+
+      eccentric_mie.SetFieldCoords({Xp_vec, Yp_vec, Zp_vec});
+      eccentric_mie.RunFieldCalculation();
+      E = eccentric_mie.GetFieldE();
+      H = eccentric_mie.GetFieldH();
     } catch(const std::invalid_argument& ia) {
-      // Will catch if  multi_layer_mie fails or other errors.
+      // Will catch if  eccentric_mie fails or other errors.
       std::cerr << "Invalid argument: " << ia.what() << std::endl;
       throw std::invalid_argument(ia);
       return - 1;
@@ -376,7 +398,6 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_inc_ = inc_size;
-    }
   }
 
 
@@ -388,7 +409,6 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     size_param_host_ = host_size;
-    }
   }
 
 
@@ -400,7 +420,6 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     shift_inc_ = inc_shift;
-    }
   }
 
 
@@ -412,7 +431,6 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     angle_inc_ = inc_angle;
-    }
   }
 
 
@@ -453,14 +471,14 @@ namespace eccmie {
   // ********************************************************************** //
   // ********************************************************************** //
   // ********************************************************************** //
-  /*void EccentricMie::SetPECLayer(int layer_position) {
+  void EccentricMie::SetPECLayer(int layer_position) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
-    if (layer_position < 0 && layer_position != -1)
-      throw std::invalid_argument("Error! Layers are numbered from 0!");
+    if (layer_position < -1 || layer_position > 1) || (layer_position > 1)
+      throw std::invalid_argument("Error! Valid values for PEC layers are -1, 0 and 1!");
     PEC_layer_position_ = layer_position;
-  }*/
+  }
 
 
   // ********************************************************************** //
