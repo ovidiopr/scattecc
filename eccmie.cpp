@@ -879,15 +879,106 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
 
-    // Calculate scattering coefficients
-    ScattCoeffs();
 
-    k1 = refractive_index_host_;
-    k2 = refractive_index_inc_;
-    x0 = size_param_host_;
-    x1 = refractive_index_host_*size_param_host_;
-    x2 = refractive_index_host_*size_param_inc_;
-    x3 = refractive_index_inc_*size_param_inc_;
+// =============================================================================
+
+    
+    std::complex<double> k0, k1, k2, x0, x1, x2, x3, xd, i_;
+    double wavel;
+    
+    
+    PI_ = 4.0*atan(1.0);
+    i_.r = 0.0;
+    i_.i = 1.0;
+    k0.r = 2*PI_/wavel;
+    k0.i = 0.0;
+    k1 = k0*refractive_index_host_;
+    k2 = k0*refractive_index_inc_;
+    x0 = k0*size_param_host_;
+    x1 = k1*size_param_host_;
+    x2 = k1*size_param_inc_;
+    x3 = k2*size_param_inc_;
+    xd = k1*shift_inc_;
+    
+    // # of iterations for the big sphere
+    //nbg = round(std::abs(x0) + 4.0*std::pow(std::abs(x0), 1.0/3.0) + 2.0);
+    nbg = GetMaxTerms();
+    
+//  .......................................................................
+//  .     Calculate Bessel Functions for the first boundary at rad1       .
+//  .     We have bessel as an incident field of the sphere, and a        .
+//  .     hankel as the scattered field.                                  .
+//  .     Their arguments are x0.r and x0, respectively.                  .
+//  .     Then we have hankel1 and hankel2 inside the sphere; and         .
+//  .     their argument is k1*rad1=x1.                                   .
+//  .......................................................................   
+    
+    const int size=100;
+    const int siza=90;
+    const int size1=size+1;
+    const int size2=size*2;
+    const int size4=size*4;
+   
+    std::vector<double> besj_o;
+    std::vector<std::complex<double>> hankel_o, hankel1_1, hankel2_1;
+    
+    init_vector (besj_o, size);
+    init_complex_vector (hankel_o, size);
+    init_complex_vector (hankel1_1, size);
+    init_complex_vector (hankel2_1, size);
+    
+    if (!bessel(x0.r, besj_o, nbg)
+      throw std::invalid_argument("Error bessel function");
+    if (!hankel0(x0, hankel_o, nbg)
+      throw std::invalid_argument("Error hankel0 function");
+    if (!hankel1(x1, hankel1_1, nbg)
+      throw std::invalid_argument("Error hankel1 function");
+    if (!hankel2(x1, hankel2_1, nbg)
+      throw std::invalid_argument("Error hankel2 function");
+
+//  .......................................................................
+//  .     Now we match boundary at rad2.  Here we have two hankels in     .
+//  .     the host sphere, and their argument is k1*rad2=x2               .
+//  .     Then we have a bessel inside the inclusion with its argument    .
+//  .     being x3.                                                       .
+//  .......................................................................
+
+    // # of iterations for the small sphere
+    //nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
+    nsm = GetMaxTermsSmall();
+ 
+    std::vector<std::complex<double>> besj_2, hankel1_2, hankel2_2;
+    
+    init_complex_vector (besj_2, size);
+    init_complex_vector (hankel1_2, size);
+    init_complex_vector (hankel2_2, size);
+    
+    if (refractive_index_inc_.r > 0.0)
+      if (!c_bessel(x3, besj_2, nsm)
+        throw std::invalid_argument("Error c_bessel function");
+    if (!hankel1(x2, hankel1_2, nsm)
+      throw std::invalid_argument("Error hankel1 function");
+    if (!hankel2(x2, hankel2_2, nsm)
+      throw std::invalid_argument("Error hankel2 function");
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+    // # of iterations for the small sphere and loops
+    nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
+
+    
+
+
 
     // # of iterations for the big sphere and loops
     nmax_ = round(std::abs(x0) + 4.0*std::pow(std::abs(x0), 1.0/3.0) + 2.0);
