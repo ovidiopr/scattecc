@@ -738,7 +738,8 @@ namespace eccmie {
   // Equations (26a) - (26c)                                                          //
   //                                                                                  //
   // Input parameters:                                                                //
-  //   nmax_: Maximum number of terms to calculate Pi and Tau                         //
+  //   nmax_: Maximum number of 'n' terms to calculate Pi and Tau                     //
+  //   mmax_: Maximum number of 'm' terms to calculate Pi and Tau                     //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
   //          amplitudes will be calculated                                           //
@@ -747,22 +748,38 @@ namespace eccmie {
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
   void EccentricMie::calcPiTau(const double& costheta,
-                                std::vector<double>& Pi, std::vector<double>& Tau) {
+                                std::vector<std::vector<double> >& Pi, std::vector<std::vector<double> >& Tau) {
 
-    int i;
-    //****************************************************//
-    // Equations (26a) - (26c)                            //
-    //****************************************************//
-    // Initialize Pi and Tau
-    Pi[0] = 1.0;  // n=1
-    Tau[0] = costheta;
-    // Calculate the actual values
-    if (nmax_ > 1) {
-      Pi[1] = 3*costheta*Pi[0]; //n=2
-      Tau[1] = 2*costheta*Pi[1] - 3*Pi[0];
-      for (i = 2; i < nmax_; i++) { //n=[3..nmax_]
-        Pi[i] = ((i + i + 1)*costheta*Pi[i - 1] - (i + 1)*Pi[i - 2])/i;
-        Tau[i] = (i + 1)*costheta*Pi[i] - (i + 2)*Pi[i - 1];
+    double sintheta = std::sqrt(1.0 - costheta*costheta);
+
+    Pi[0, 0] = 1.0/sintheta;
+    Pi[0, 1] = costheta/sintheta;
+    Pi[1, 0] = 0.0;
+    Pi[1, 1] = 1.0;
+
+    Tau[0, 0] = 0.0;
+    Tau[0, 1] = costheta*Pi[0, 1] - Pi[0, 0];
+    Tau[1, 0] = 0.0;
+    Tau[1, 1] = costheta*Pi[1, 1] - 2*Pi[1, 0];
+
+    // If |m| > n => Pi[m, n] = Tau[m, n] = 0
+    for (int m = 2; m <= mmax_; m++) {
+      Pi[m, 0] = 0.0;
+      Pi[m, 1] = 0.0;
+
+      Tau[m, 0] = 0.0;
+      Tau[m, 1] = 0.0;
+    }
+
+    for (int m = 0; m <= mmax_; m++) {
+      for (int n = 2; n <= nmax_; n++) {
+        if (m > n) {
+          Pi[m, n] = 0.0;
+          Tau[m, n] = 0.0;
+        } else {
+          Pi[m, n] = ((n + n - 1)*costheta*Pi[m, n - 1] - (n + m - 1)*Pi[m, n - 2])/(n - m);
+          Tau[m, n] = n*costheta*Pi[m, n] - (n + m)*Pi[m, n - 1]
+        }
       }
     }
   }  // end of EccentricMie::calcPiTau(...)
