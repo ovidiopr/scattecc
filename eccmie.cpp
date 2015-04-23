@@ -944,13 +944,13 @@ namespace eccmie {
     init_complex_vector (hankel1_1, size);
     init_complex_vector (hankel2_1, size);
     
-    if (!bessel(x0.r, besj_o, nbg)
+    if (!bessel(x0.r, besj_o, nbg))
       throw std::invalid_argument("Error bessel function");
-    if (!hankel0(x0, hankel_o, nbg)
+    if (!hankel0(x0, hankel_o, nbg))
       throw std::invalid_argument("Error hankel0 function");
-    if (!hankel1(x1, hankel1_1, nbg)
+    if (!hankel1(x1, hankel1_1, nbg))
       throw std::invalid_argument("Error hankel1 function");
-    if (!hankel2(x1, hankel2_1, nbg)
+    if (!hankel2(x1, hankel2_1, nbg))
       throw std::invalid_argument("Error hankel2 function");
 
 //  .......................................................................
@@ -978,12 +978,114 @@ namespace eccmie {
     if (!hankel2(x2, hankel2_2, nsm)
       throw std::invalid_argument("Error hankel2 function");
 
+//  .......................................................................
+//  .    Calculate Riccati-Bessel Functions and Derivatives needed        .
+//  .     Note that zeta_o  means zeta at k0a1=x0
+//  .     and       zeta1_1 means the 1st zeta at k1a1=x1                 .
+//  .     and       zeta2_1 means the 2nd zeta at k1a1=x1                 .
+//  .     and       zeta1_2 means the 1st zeta at k1a2=x2                 .
+//  .     and       zeta2_2 means the 2nd zeta at k1a2=x2                 .
+//  .     and       zeta2_2 means the 2nd zeta at k1a2=x2                 .
+//  .......................................................................
+        
+    std::vector<std::complex<double>> zeta_o, dzeta_o, zeta1_1, dzeta1_1;
+    std::vector<std::complex<double>> zeta2_1, dzeta2_1, zeta1_2, dzeta1_2;
+    std::vector<std::complex<double>> zeta2_2, dzeta2_2, psi_2, dpsi_2;
+    
+    init_vector (zeta_o, size);
+    init_vector (dzeta_o, size);
+    init_complex_vector (zeta1_1, size);
+    init_complex_vector (dzeta1_1, size);
+    init_complex_vector (zeta2_1, size);
+    init_complex_vector (dzeta2_1, size);
+    init_complex_vector (zeta1_2, size);
+    init_complex_vector (dzeta1_2, size);
+    init_complex_vector (zeta2_2, size);
+    init_complex_vector (dzeta2_2, size);
+    init_complex_vector (psi_2, size);
+    init_complex_vector (dpsi_2, size);
+
+    if (!riccati(nbg,besj_o,psi_o,dpsi_o,x0.r))
+      throw std::invalid_argument("Error riccati function");
+    if (!c_riccati(nbg,hankel_o,zeta_o,dzeta_o,x0))
+      throw std::invalid_argument("Error c_riccati function");
+    if (!c_riccati(nbg,hankel1_1,zeta1_1,dzeta1_1,x1))
+      throw std::invalid_argument("Error c_riccati function");
+    if (!c_riccati(nbg,hankel2_1,zeta2_1,dzeta2_1,x1))
+      throw std::invalid_argument("Error c_riccati function");
+    if (!c_riccati(nsm,hankel1_2,zeta1_2,dzeta1_2,x2))
+      throw std::invalid_argument("Error c_riccati function");
+    if (!c_riccati(nsm,hankel2_2,zeta2_2,dzeta2_2,x2))
+      throw std::invalid_argument("Error c_riccati function");
+    if (!c_riccati(nsm,besj_2,psi_2,dpsi_2,x3))
+      throw std::invalid_argument("Error c_riccati function");        
+        
+//  .......................................................................
+//  .     Now we must solve for the Quality factors by using equations    .
+//  .     17 and 18.                                                      .
+//  .     Note that if the index of refraction of the inclusion is nega-  .
+//  .     tive, then we'll take that to mean it is a perfect conductor,   .
+//  .     and the simplification is in the "else" part of the if-else     .
+//  .     statement.                                                      .
+//  .......................................................................
+
+    std::vector<std::complex<double>> Q_r, Q_s;
+    int n;
+    
+    init_complex_vector (Q_r, size);
+    init_complex_vector (Q_s, size);
+
+    if (refractive_index_inc_.r > 0.0) 
+      for (n = 0; n < nbg + 1; n++) {
+        Q_r(n)=CalQ_r(n); //ec. 17
+        Q_s(n)=CalQ_s(n); //ec. 18
+      }
+    else // The inclusion is a perfect conductor
+      for (n = 0; n < nbg + 1; n++) {
+        Q_r(n)=CalQ_r_perfect(n);
+        Q_s(n)=CalQ_s_perfect(n);
+      } 
+      
+//  ........................................................................
+//  .    Calculate translation coefficients when the separation of the     .
+//  .    center to center radii is d.  We will first find the bessel       .
+//  .    function which describes the separation, k1d=xd, used in 23 and 24.
+//  ........................................................................
+        
+    // # of iterations for d
+    //if (xd == 0.0) nxd = 2; else 
+    //   nxd = round(std::abs(xd) + 4.0*std::pow(std::abs(xd), 1.0/3.0) + 2.0);
+    nxd = GetMaxTermsSeparation();
+ 
+    std::vector<std::complex<double>> besj_d;
+    
+    init_complex_vector (besj_d, size4);
+        
+    if (!c_bessel(xd, besj_d, nxd*3)) // warning why 3 times?
+      throw std::invalid_argument("Error c_bessel function");
+    
+//  ...............................................
+//  .    using 23 and 24 first.                   .
+//  .    cuplo = c0,0(np) and                     .
+//  .    cuplo1 = c-1,0(np) are the starters      .
+//  ...............................................
+
+     
+
+      do 110 np=0,nbg*4
+        fnp=dfloat(np)
+        cuplo(np)=besj_d(np)*dsqrt(2.*fnp+1.)
+        cuplo1(np)=-cuplo(np)
+ 110  continue
+      do 115 np=0,nbg*2
+        cuplom(0,np)=cuplo(np)          
+ 115  continue
+
+    
+    
 
 
-
-
-
-
+    
 
 
     
