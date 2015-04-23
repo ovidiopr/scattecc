@@ -1092,7 +1092,10 @@ namespace eccmie {
       for (np = 0; np < nmax_-n; np++) // Can the loop be without the (-n)? 
         cuplom[n+1,np] = Ecuation25(n,np,cuplom[n][np-1],cuplom[n-1][np],cuplom[n][np-1]); 
      
-   
+    // eso quedo aleman!!!!!
+    
+    
+       
      
     
 
