@@ -1196,33 +1196,20 @@ namespace eccmie {
         TransBm[n][np]=Equation22(m,np,xd,cuplom[n][np]);        
       }  
       
+//    ...............................................................
+//    .     Now we will calculate the incident field coefficients   .
+//    .     for the TE case and store them in aa(i) and ba(i)       .
+//    ...............................................................
       
-      do 190 n=m,nbg
-         pie=0.0
-         tau=0.0
-         do 195 np=m,nbg
-            fnp=dfloat(np)
-            tau=(fnp-m+1.0)*(fnp+m+1.0)
-            tau=tau/((2.*fnp+1.)*(2.*fnp+3.))
-            tau=dsqrt(tau)
-            TransA=-xd/(fnp+1.0)
-            TransA=TransA*tau*cuplom(n,np+1)
-c           if(np.eq.nbg) TransA=0.0
-            TransB=0.0
-            if (np.gt.0) then
-             pie=(fnp-m)*(fnp+m)
-             pie=pie/((2.*fnp-1.)*(2.*fnp+1.))
-             pie=dsqrt(pie)
-             c=-xd*pie*cuplom(n,np-1)/fnp
-             TransA=TransA+c
-             TransB=-ccc*xd*m*cuplom(n,np)/(fnp*(fnp+1.))
-            endif
-            TransA=cuplom(n,np)+TransA
-            TransAm(n,np)=TransA
-            TransBm(n,np)=TransB
-c       if(m.eq.1.or.m.eq.2)write(8,*)n,np,TransA,TransB
- 195     continue
- 190  continue
+      double x, factor;
+      
+      x=std::cos(pi*angle_inc_/180.);
+      
+      for (n = m; n < nmax_; n++) {
+        factor = 2 * std::pow(i_, n + 2) / (n * n + n);
+        aa[n] = factor * tau(n, m, x);
+        ba[n] = factor * m * pie(n, m, x);
+      }
        
     
     
