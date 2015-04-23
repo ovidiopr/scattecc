@@ -1110,7 +1110,66 @@ namespace eccmie {
      
     // eso quedo aleman!!!!!
     
+//  .......................................................
+//  . Now that we have the elements in the matrix         .
+//  . cuplom(n,np) (for m=0), we can start the            .
+//  . iterations in m to get the rest of the translation  .
+//  . coeff. Then we'll have the complete set of C(n,m)np .
+//  .......................................................
     
+    int m;
+    
+    for (m=0; m < nmax_; m++) { // main loop for m 
+//  ..............................................................
+//  . Now to find the rest of the matrix in C(n,m)np.  For each   .
+//  . value of m that is greater than 0, say 1, we can find the   .
+//  . matrix C(n,1)np and store that into cuplom(n,np); then      .
+//  . the next iteration of m, i.e. m=2, we can find C(n,2)np     .
+//  . by already having C(n,1)np stored in the matrix cuplom(n,np).
+//  . Use equation 26                                             .
+//  ...............................................................
+    
+    if (m > 0) { 
+      //save the last cuplom in cuplom1
+      for (n=0; n < nmax_; n++)
+        for (np=0; np < nmax_; np++)
+          cuplom1[n][np]=cuplom[n][np];
+      
+      
+          
+    } // if m>0
+     
+      if (m.gt.0) then
+      
+        do 160 n=m,2*nbg-m
+          fn=dfloat(n)
+          do 159 np=m,2*nbg-m
+           fnp=dfloat(np)
+       c=dsqrt((fnp-m+1.)*(fnp+m)*(2.*fnp+1.))*cuplom1(n,np)
+           cuplom(n,np)=c
+           c=xd*dsqrt((fnp-m+2.)*(fnp-m+1.)/(2.*fnp+3.))
+           cuplom(n,np)=cuplom(n,np)-c*cuplom1(n,np+1)
+           c=xd*dsqrt((fnp+m)*(fnp+m-1.)/(2.*fnp-1.))
+           cuplom(n,np)=cuplom(n,np)-c*cuplom1(n,np-1)
+           c=dsqrt((fn-m+1.)*(fn+m)*(2.*fnp+1.))
+           cuplom(n,np)=cuplom(n,np)/c
+ 159      continue
+ 160    continue
+      endif
+
+c ..................................................
+c . Cuplom(n,np) now has the most recent values    .
+c . for the most recent value of m.  Note that     .
+c . we didn't find C(n,0)np because we already     .
+c . have those values stored in the cuplom matrix  .
+c ..................................................
+
+       
+    
+    
+    } // loop m 
+     
+     
        
      
     
