@@ -1037,13 +1037,13 @@ namespace eccmie {
 
     if (refractive_index_inc_.r > 0.0) 
       for (n = 0; n < nbg + 1; n++) {
-        Q_r(n)=CalQ_r(n); //ec. 17
-        Q_s(n)=CalQ_s(n); //ec. 18
+        Q_r[n]=CalQ_r(n); //ec. 17
+        Q_s[n]=CalQ_s(n); //ec. 18
       }
     else // The inclusion is a perfect conductor
       for (n = 0; n < nbg + 1; n++) {
-        Q_r(n)=CalQ_r_perfect(n);
-        Q_s(n)=CalQ_s_perfect(n);
+        Q_r[n]=CalQ_r_perfect(n);
+        Q_s[n]=CalQ_s_perfect(n);
       } 
       
 //  ........................................................................
@@ -1059,9 +1059,9 @@ namespace eccmie {
  
     std::vector<std::complex<double>> besj_d;
     
-    init_complex_vector (besj_d, size4);
+    init_complex_vector (besj_d, nmax_);
         
-    if (!c_bessel(xd, besj_d, nxd*3)) // warning why 3 times?
+    if (!c_bessel(xd, besj_d, nmax_))
       throw std::invalid_argument("Error c_bessel function");
     
 //  ...............................................
@@ -1070,18 +1070,30 @@ namespace eccmie {
 //  .    cuplo1 = c-1,0(np) are the starters      .
 //  ...............................................
 
+    std::complex<double> cuplo(nmax_), cuplo1(nmax_);
+    std::vector<std::complex<double>> cuplom(nmax_);
+    int np;
+        
+    for (np = 0; np < nmax_; np++) {
+      cuplom[np].resize(nmax_);
+      cuplo[np] = besj_d[np] * std::sqrt(np+np+1.0);
+      cuplo1[np]=-cuplo[np];
+      cuplom[0,np]=cuplo[np];
+    }
+
+//  .................................................
+//  .     Now use equation 25, this is where we     .
+//  .     perform the switcharoos and recursively   .
+//  .     solve for the translation coeff. for m=0  .
+//  .     The result is stored into the cuplom      .
+//  .................................................
+      
+    for (n = 0; n < nmax_; n++) // [0..nmax_-1]
+      for (np = 0; np < nmax_-n; np++) // Can the loop be without the (-n)? 
+        cuplom[n+1,np] = Ecuation25(n,np,cuplom[n][np-1],cuplom[n-1][np],cuplom[n][np-1]); 
      
-
-      do 110 np=0,nbg*4
-        fnp=dfloat(np)
-        cuplo(np)=besj_d(np)*dsqrt(2.*fnp+1.)
-        cuplo1(np)=-cuplo(np)
- 110  continue
-      do 115 np=0,nbg*2
-        cuplom(0,np)=cuplo(np)          
- 115  continue
-
-    
+   
+     
     
 
 
