@@ -871,6 +871,22 @@ namespace eccmie {
 
 
 
+  std::complex<double> EccentricMie::Equation26( int m, int n, int np, 
+                      std::complex<double> xd, std::complex<double> c_n_np,
+                      std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1);
+
+    std::complex<double> term1, term2, term3, factor;
+    
+    factor = 1/std::sqrt((n-m+1)*(n+m)*(np+np+1));
+    term1  = c_n_np*std::sqrt((np-m+1)*(np+m)*(np+np+1));
+    term2  = -xd*c_n_npplus1*std::sqrt((np-m+2)*(np-m+1)/(np+np+3)); 
+    term3  = -xd*c_n_npminus1*std::sqrt((np+m)*(np+m-1)/(np+np-1));                   
+                        
+    return factor * (term1 + term2 + term3);                   
+  }
+
+Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
+
 
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
@@ -948,7 +964,7 @@ namespace eccmie {
     
    
     std::vector<double> besj_o;
-    std::vector<std::complex<double>> hankel_o, hankel1_1, hankel2_1;
+    std::vector<std::complex<double> > hankel_o, hankel1_1, hankel2_1;
     
     init_vector (besj_o, nmax_);
     init_complex_vector (hankel_o, nmax_);
@@ -975,7 +991,7 @@ namespace eccmie {
     //nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
     //nsm = GetMaxTermsSmall();
  
-    std::vector<std::complex<double>> besj_2, hankel1_2, hankel2_2;
+    std::vector<std::complex<double> > besj_2, hankel1_2, hankel2_2;
     
     init_complex_vector (besj_2, nmax_);
     init_complex_vector (hankel1_2, nmax_);
@@ -999,9 +1015,9 @@ namespace eccmie {
 //  .     and       zeta2_2 means the 2nd zeta at k1a2=x2                 .
 //  .......................................................................
         
-    std::vector<std::complex<double>> zeta_o, dzeta_o, zeta1_1, dzeta1_1;
-    std::vector<std::complex<double>> zeta2_1, dzeta2_1, zeta1_2, dzeta1_2;
-    std::vector<std::complex<double>> zeta2_2, dzeta2_2, psi_2, dpsi_2;
+    std::vector<std::complex<double> > zeta_o, dzeta_o, zeta1_1, dzeta1_1;
+    std::vector<std::complex<double> > zeta2_1, dzeta2_1, zeta1_2, dzeta1_2;
+    std::vector<std::complex<double> > zeta2_2, dzeta2_2, psi_2, dpsi_2;
     
     init_vector (zeta_o, nmax_);
     init_vector (dzeta_o, nmax_);
@@ -1040,19 +1056,19 @@ namespace eccmie {
 //  .     statement.                                                      .
 //  .......................................................................
 
-    std::vector<std::complex<double>> Q_r, Q_s;
+    std::vector<std::complex<double> > Q_r, Q_s;
     int n;
     
     init_complex_vector (Q_r, nmax_);
     init_complex_vector (Q_s, nmax_);
 
     if (refractive_index_inc_.r > 0.0) 
-      for (n = 0; n < nmax_ + 1; n++) {
+      for (n = 0; n < nmax_; n++) {
         Q_r[n]=CalQ_r(n); //ec. 17
         Q_s[n]=CalQ_s(n); //ec. 18
       }
     else // The inclusion is a perfect conductor
-      for (n = 0; n < nmax_ + 1; n++) {
+      for (n = 0; n < nmax_; n++) {
         Q_r[n]=CalQ_r_perfect(n);
         Q_s[n]=CalQ_s_perfect(n);
       } 
@@ -1066,13 +1082,13 @@ namespace eccmie {
     // # of iterations for d
     //if (xd == 0.0) nxd = 2; else 
     //   nxd = round(std::abs(xd) + 4.0*std::pow(std::abs(xd), 1.0/3.0) + 2.0);
-    nxd = GetMaxTermsSeparation();
+    //nxd = GetMaxTermsSeparation();
  
-    std::vector<std::complex<double>> besj_d;
+    std::vector<std::complex<double> > besj_d;
     
-    init_complex_vector (besj_d, nmax_);
+    init_complex_vector (besj_d, 2*nmax_+1);
         
-    if (!c_bessel(xd, besj_d, nmax_))
+    if (!c_bessel(xd, besj_d, 2*nmax_+1))
       throw std::invalid_argument("Error c_bessel function");
     
 //  ...............................................
@@ -1084,9 +1100,10 @@ namespace eccmie {
     std::vector<std::complex<double> > cuplo(nmax_), cuplo1(nmax_);
     std::vector<std::vector<std::complex<double> > > cuplom(nmax_);
     int np;
+    for (n = 0; n < nmax_; n++)
+      cuplom[n].resize(2*nmax_+1-n); 
         
-    for (np = 0; np < nmax_; np++) {
-      cuplom[np].resize(nmax_);
+    for (np = 0; np < 2*nmax_+1; np++) {
       cuplo[np] = besj_d[np] * std::sqrt(np+np+1.0);
       cuplo1[np]=-cuplo[np];
       cuplom[0,np]=cuplo[np];
@@ -1100,7 +1117,7 @@ namespace eccmie {
 //  .................................................
       
     for (n = 0; n < nmax_; n++) // [0..nmax_-1]
-      for (np = 0; np < nmax_-n; np++) // Can the loop be without the (-n)? 
+      for (np = 0; np < 2*nmax_+1-n; np++) 
         cuplom[n+1,np] = Ecuation25(n,np,cuplom[n][np-1],cuplom[n-1][np],cuplom[n][np+1]); 
      
     // eso quedo aleman!!!!!
@@ -1115,22 +1132,25 @@ namespace eccmie {
     int m;
     
     for (m=0; m < nmax_; m++) { // main loop for m 
-//  ..............................................................
-//  . Now to find the rest of the matrix in C(n,m)np.  For each   .
-//  . value of m that is greater than 0, say 1, we can find the   .
-//  . matrix C(n,1)np and store that into cuplom(n,np); then      .
-//  . the next iteration of m, i.e. m=2, we can find C(n,2)np     .
-//  . by already having C(n,1)np stored in the matrix cuplom(n,np).
-//  . Use equation 26                                             .
-//  ...............................................................
+//  ................................................................
+//  . Now to find the rest of the matrix in C(n,m)np.  For each    .
+//  . value of m that is greater than 0, say 1, we can find the    .
+//  . matrix C(n,1)np and store that into cuplom(n,np); then       .
+//  . the next iteration of m, i.e. m=2, we can find C(n,2)np      .
+//  . by already having C(n,1)np stored in the matrix cuplom1(n,np).
+//  . Use equation 26                                              .
+//  ................................................................
     
     if (m > 0) { 
       //save the last cuplom in cuplom1
       for (n=0; n < nmax_; n++)
-        for (np=0; np < nmax_; np++)
+        for (np=0; np < 2*nmax_+1; np++)
           cuplom1[n][np]=cuplom[n][np];
       
-      
+      for (n)
+        for (np) {
+          cuplom[n,np]=Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
+        }
           
     } // if m>0
      
