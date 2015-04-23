@@ -869,8 +869,6 @@ namespace eccmie {
     return factor * (term1 + term2 + term3);                   
   }
 
-
-
   std::complex<double> EccentricMie::Equation26( int m, int n, int np, 
                       std::complex<double> xd, std::complex<double> c_n_np,
                       std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1);
@@ -885,7 +883,24 @@ namespace eccmie {
     return factor * (term1 + term2 + term3);                   
   }
 
-Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
+  std::complex<double> EccentricMie::Equation21( int m, int np, 
+                      std::complex<double> xd, std::complex<double> c_n_np,
+                      std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1);
+
+    std::complex<double> term1, term2;
+    
+    term1  = -xd*c_n_npplus1*std::sqrt((np-m+1)*(np+m+1)/((np+np+1)*(np+np+3)))/(np+1);
+    term2  = -xd*c_n_npnimus1*std::sqrt((np-m)*(np+m)/((np+np+1)*(np+np-1))/np; 
+                        
+    return  c_n_np + term1 + term2;                   
+  }
+
+  std::complex<double> EccentricMie::Equation22( int m, int np, 
+                      std::complex<double> xd, std::complex<double> c_n_np);
+                        
+    return  -i_*m*xd*c_n_np/(np*(np+1));
+  }
+
 
 
   //**********************************************************************************//
@@ -1099,9 +1114,13 @@ Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
 
     std::vector<std::complex<double> > cuplo(nmax_), cuplo1(nmax_);
     std::vector<std::vector<std::complex<double> > > cuplom(nmax_);
+    std::vector<std::vector<std::complex<double> > > cuplom1(nmax_);
+    
     int np;
-    for (n = 0; n < nmax_; n++)
-      cuplom[n].resize(2*nmax_+1-n); 
+    for (n = 0; n < nmax_; n++) {
+      cuplom[n].resize(2*nmax_+1-n);
+      cuplom1[n].resize(2*nmax_+1-n);
+    }   
         
     for (np = 0; np < 2*nmax_+1; np++) {
       cuplo[np] = besj_d[np] * std::sqrt(np+np+1.0);
@@ -1147,38 +1166,63 @@ Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
         for (np=0; np < 2*nmax_+1; np++)
           cuplom1[n][np]=cuplom[n][np];
       
+//      do 160 n=m,2*nbg-m
+//        do 159 np=m,2*nbg-m
+
+//    Why the rito?
+      
       for (n)
-        for (np) {
+        for (np) 
           cuplom[n,np]=Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
-        }
-          
+
     } // if m>0
      
-      if (m.gt.0) then
+//  ..................................................
+//  . Cuplom(n,np) now has the most recent values    .
+//  . for the most recent value of m.                .
+//  ..................................................
+
+//  ............................................................
+//  . Now that we have the matrix which contains the C(n,m)np  .
+//  . we can go ahead and find the translation coefficients    .
+//  . A(n,m)np and B(n,m)np by using eqns 21 & 22. Note,       .
+//  . we do need to store TransAm and TransBm into a matrix    .
+//  . like we did for the C(n,m)np for later manipulation      .
+//  ............................................................
       
-        do 160 n=m,2*nbg-m
-          fn=dfloat(n)
-          do 159 np=m,2*nbg-m
-           fnp=dfloat(np)
-       c=dsqrt((fnp-m+1.)*(fnp+m)*(2.*fnp+1.))*cuplom1(n,np)
-           cuplom(n,np)=c
-           c=xd*dsqrt((fnp-m+2.)*(fnp-m+1.)/(2.*fnp+3.))
-           cuplom(n,np)=cuplom(n,np)-c*cuplom1(n,np+1)
-           c=xd*dsqrt((fnp+m)*(fnp+m-1.)/(2.*fnp-1.))
-           cuplom(n,np)=cuplom(n,np)-c*cuplom1(n,np-1)
-           c=dsqrt((fn-m+1.)*(fn+m)*(2.*fnp+1.))
-           cuplom(n,np)=cuplom(n,np)/c
- 159      continue
- 160    continue
-      endif
-
-c ..................................................
-c . Cuplom(n,np) now has the most recent values    .
-c . for the most recent value of m.  Note that     .
-c . we didn't find C(n,0)np because we already     .
-c . have those values stored in the cuplom matrix  .
-c ..................................................
-
+    for (n = m; n < nmax_; n++) 
+      for (np = m; np < nmax_; np++) {
+        TransAm[n][np]=Equation21(m,np,xd,cuplom[n][np],cuplom[n][np+1],cuplom[n][np-1]);
+        TransBm[n][np]=Equation22(m,np,xd,cuplom[n][np]);        
+      }  
+      
+      
+      do 190 n=m,nbg
+         pie=0.0
+         tau=0.0
+         do 195 np=m,nbg
+            fnp=dfloat(np)
+            tau=(fnp-m+1.0)*(fnp+m+1.0)
+            tau=tau/((2.*fnp+1.)*(2.*fnp+3.))
+            tau=dsqrt(tau)
+            TransA=-xd/(fnp+1.0)
+            TransA=TransA*tau*cuplom(n,np+1)
+c           if(np.eq.nbg) TransA=0.0
+            TransB=0.0
+            if (np.gt.0) then
+             pie=(fnp-m)*(fnp+m)
+             pie=pie/((2.*fnp-1.)*(2.*fnp+1.))
+             pie=dsqrt(pie)
+             c=-xd*pie*cuplom(n,np-1)/fnp
+             TransA=TransA+c
+             TransB=-ccc*xd*m*cuplom(n,np)/(fnp*(fnp+1.))
+            endif
+            TransA=cuplom(n,np)+TransA
+            TransAm(n,np)=TransA
+            TransBm(n,np)=TransB
+c       if(m.eq.1.or.m.eq.2)write(8,*)n,np,TransA,TransB
+ 195     continue
+ 190  continue
        
     
     
