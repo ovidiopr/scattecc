@@ -919,7 +919,7 @@ namespace eccmie {
     
     // # of iterations for the big sphere
     //nbg = round(std::abs(x0) + 4.0*std::pow(std::abs(x0), 1.0/3.0) + 2.0);
-    nbg = GetMaxTerms();
+    nmax_ = GetMaxTerms();
     
 //  .......................................................................
 //  .     Calculate Bessel Functions for the first boundary at rad1       .
@@ -944,13 +944,13 @@ namespace eccmie {
     init_complex_vector (hankel1_1, size);
     init_complex_vector (hankel2_1, size);
     
-    if (!bessel(x0.r, besj_o, nbg))
+    if (!bessel(x0.r, besj_o, nmax_))
       throw std::invalid_argument("Error bessel function");
-    if (!hankel0(x0, hankel_o, nbg))
+    if (!hankel0(x0, hankel_o, nmax_))
       throw std::invalid_argument("Error hankel0 function");
-    if (!hankel1(x1, hankel1_1, nbg))
+    if (!hankel1(x1, hankel1_1, nmax_))
       throw std::invalid_argument("Error hankel1 function");
-    if (!hankel2(x1, hankel2_1, nbg))
+    if (!hankel2(x1, hankel2_1, nmax_))
       throw std::invalid_argument("Error hankel2 function");
 
 //  .......................................................................
@@ -962,7 +962,7 @@ namespace eccmie {
 
     // # of iterations for the small sphere
     //nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
-    nsm = GetMaxTermsSmall();
+    //nsm = GetMaxTermsSmall();
  
     std::vector<std::complex<double>> besj_2, hankel1_2, hankel2_2;
     
@@ -971,11 +971,11 @@ namespace eccmie {
     init_complex_vector (hankel2_2, size);
     
     if (refractive_index_inc_.r > 0.0)
-      if (!c_bessel(x3, besj_2, nsm)
+      if (!c_bessel(x3, besj_2, nmax_)
         throw std::invalid_argument("Error c_bessel function");
-    if (!hankel1(x2, hankel1_2, nsm)
+    if (!hankel1(x2, hankel1_2, nmax_)
       throw std::invalid_argument("Error hankel1 function");
-    if (!hankel2(x2, hankel2_2, nsm)
+    if (!hankel2(x2, hankel2_2, nmax_)
       throw std::invalid_argument("Error hankel2 function");
 
 //  .......................................................................
@@ -1005,19 +1005,19 @@ namespace eccmie {
     init_complex_vector (psi_2, size);
     init_complex_vector (dpsi_2, size);
 
-    if (!riccati(nbg,besj_o,psi_o,dpsi_o,x0.r))
+    if (!riccati(nmax_,besj_o,psi_o,dpsi_o,x0.r))
       throw std::invalid_argument("Error riccati function");
-    if (!c_riccati(nbg,hankel_o,zeta_o,dzeta_o,x0))
+    if (!c_riccati(nmax_,hankel_o,zeta_o,dzeta_o,x0))
       throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nbg,hankel1_1,zeta1_1,dzeta1_1,x1))
+    if (!c_riccati(nmax_,hankel1_1,zeta1_1,dzeta1_1,x1))
       throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nbg,hankel2_1,zeta2_1,dzeta2_1,x1))
+    if (!c_riccati(nmax_,hankel2_1,zeta2_1,dzeta2_1,x1))
       throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nsm,hankel1_2,zeta1_2,dzeta1_2,x2))
+    if (!c_riccati(nmax_,hankel1_2,zeta1_2,dzeta1_2,x2))
       throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nsm,hankel2_2,zeta2_2,dzeta2_2,x2))
+    if (!c_riccati(nmax_,hankel2_2,zeta2_2,dzeta2_2,x2))
       throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nsm,besj_2,psi_2,dpsi_2,x3))
+    if (!c_riccati(nmax_,besj_2,psi_2,dpsi_2,x3))
       throw std::invalid_argument("Error c_riccati function");        
         
 //  .......................................................................
@@ -1036,12 +1036,12 @@ namespace eccmie {
     init_complex_vector (Q_s, size);
 
     if (refractive_index_inc_.r > 0.0) 
-      for (n = 0; n < nbg + 1; n++) {
+      for (n = 0; n < nmax_ + 1; n++) {
         Q_r(n)=CalQ_r(n); //ec. 17
         Q_s(n)=CalQ_s(n); //ec. 18
       }
     else // The inclusion is a perfect conductor
-      for (n = 0; n < nbg + 1; n++) {
+      for (n = 0; n < nmax_ + 1; n++) {
         Q_r(n)=CalQ_r_perfect(n);
         Q_s(n)=CalQ_s_perfect(n);
       } 
