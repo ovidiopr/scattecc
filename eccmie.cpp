@@ -856,8 +856,8 @@ namespace eccmie {
   }  // end of EccentricMie::ScattCoeffs(...)
 
 
-  std::complex<double> EccentricMie::Ecuation25(int n, np;
-                       std::complex<double> c_n_npminus1,c_nminus1_np,c_n_npplus1];) {
+  std::complex<double> EccentricMie::Ecuation25(int n, int np,
+                       std::complex<double> c_n_npminus1, std::complex<double> c_nminus1_np, std::complex<double> c_n_npplus1]) {
 
     std::complex<double> term1, term2, term3, factor;
     
@@ -946,19 +946,14 @@ namespace eccmie {
 //  .     their argument is k1*rad1=x1.                                   .
 //  .......................................................................   
     
-    const int size=100;
-    const int siza=90;
-    const int size1=size+1;
-    const int size2=size*2;
-    const int size4=size*4;
    
     std::vector<double> besj_o;
     std::vector<std::complex<double>> hankel_o, hankel1_1, hankel2_1;
     
-    init_vector (besj_o, size);
-    init_complex_vector (hankel_o, size);
-    init_complex_vector (hankel1_1, size);
-    init_complex_vector (hankel2_1, size);
+    init_vector (besj_o, nmax_);
+    init_complex_vector (hankel_o, nmax_);
+    init_complex_vector (hankel1_1, nmax_);
+    init_complex_vector (hankel2_1, nmax_);
     
     if (!bessel(x0.r, besj_o, nmax_))
       throw std::invalid_argument("Error bessel function");
@@ -982,9 +977,9 @@ namespace eccmie {
  
     std::vector<std::complex<double>> besj_2, hankel1_2, hankel2_2;
     
-    init_complex_vector (besj_2, size);
-    init_complex_vector (hankel1_2, size);
-    init_complex_vector (hankel2_2, size);
+    init_complex_vector (besj_2, nmax_);
+    init_complex_vector (hankel1_2, nmax_);
+    init_complex_vector (hankel2_2, nmax_);
     
     if (refractive_index_inc_.r > 0.0)
       if (!c_bessel(x3, besj_2, nmax_)
@@ -1008,18 +1003,18 @@ namespace eccmie {
     std::vector<std::complex<double>> zeta2_1, dzeta2_1, zeta1_2, dzeta1_2;
     std::vector<std::complex<double>> zeta2_2, dzeta2_2, psi_2, dpsi_2;
     
-    init_vector (zeta_o, size);
-    init_vector (dzeta_o, size);
-    init_complex_vector (zeta1_1, size);
-    init_complex_vector (dzeta1_1, size);
-    init_complex_vector (zeta2_1, size);
-    init_complex_vector (dzeta2_1, size);
-    init_complex_vector (zeta1_2, size);
-    init_complex_vector (dzeta1_2, size);
-    init_complex_vector (zeta2_2, size);
-    init_complex_vector (dzeta2_2, size);
-    init_complex_vector (psi_2, size);
-    init_complex_vector (dpsi_2, size);
+    init_vector (zeta_o, nmax_);
+    init_vector (dzeta_o, nmax_);
+    init_complex_vector (zeta1_1, nmax_);
+    init_complex_vector (dzeta1_1, nmax_);
+    init_complex_vector (zeta2_1, nmax_);
+    init_complex_vector (dzeta2_1, nmax_);
+    init_complex_vector (zeta1_2, nmax_);
+    init_complex_vector (dzeta1_2, nmax_);
+    init_complex_vector (zeta2_2, nmax_);
+    init_complex_vector (dzeta2_2, nmax_);
+    init_complex_vector (psi_2, nmax_);
+    init_complex_vector (dpsi_2, nmax_);
 
     if (!riccati(nmax_,besj_o,psi_o,dpsi_o,x0.r))
       throw std::invalid_argument("Error riccati function");
@@ -1048,8 +1043,8 @@ namespace eccmie {
     std::vector<std::complex<double>> Q_r, Q_s;
     int n;
     
-    init_complex_vector (Q_r, size);
-    init_complex_vector (Q_s, size);
+    init_complex_vector (Q_r, nmax_);
+    init_complex_vector (Q_s, nmax_);
 
     if (refractive_index_inc_.r > 0.0) 
       for (n = 0; n < nmax_ + 1; n++) {
@@ -1086,8 +1081,8 @@ namespace eccmie {
 //  .    cuplo1 = c-1,0(np) are the starters      .
 //  ...............................................
 
-    std::complex<double> cuplo(nmax_), cuplo1(nmax_);
-    std::vector<std::complex<double>> cuplom(nmax_);
+    std::vector<std::complex<double> > cuplo(nmax_), cuplo1(nmax_);
+    std::vector<std::vector<std::complex<double> > > cuplom(nmax_);
     int np;
         
     for (np = 0; np < nmax_; np++) {
@@ -1106,7 +1101,7 @@ namespace eccmie {
       
     for (n = 0; n < nmax_; n++) // [0..nmax_-1]
       for (np = 0; np < nmax_-n; np++) // Can the loop be without the (-n)? 
-        cuplom[n+1,np] = Ecuation25(n,np,cuplom[n][np-1],cuplom[n-1][np],cuplom[n][np-1]); 
+        cuplom[n+1,np] = Ecuation25(n,np,cuplom[n][np-1],cuplom[n-1][np],cuplom[n][np+1]); 
      
     // eso quedo aleman!!!!!
     
