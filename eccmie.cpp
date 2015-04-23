@@ -856,6 +856,22 @@ namespace eccmie {
   }  // end of EccentricMie::ScattCoeffs(...)
 
 
+  std::complex<double> EccentricMie::Ecuation25(int n, np;
+                       std::complex<double> c_n_npminus1,c_nminus1_np,c_n_npplus1];) {
+
+    std::complex<double> term1, term2, term3, factor;
+    
+    factor = std::sqrt((n+n+3)/(np+np+1))/(n+1);
+    term1  = np*c_n_npminus1*std::sqrt((n+n+1)/(np+np-1));
+    term2  = n*c_nminus1_np*std::sqrt((np+np+1)/(n+n-1)); 
+    term3  = -(np+1)*c_n_npplus1*std::sqrt((n+n+1)/(np+np+3));                   
+                        
+    return factor * (term1 + term2 + term3);                   
+  }
+
+
+
+
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
   //                                                                                  //
