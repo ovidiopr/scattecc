@@ -1074,9 +1074,10 @@ namespace eccmie {
       }
     else // The inclusion is a perfect conductor
       for (n = 0; n < nmax_; n++) {
-        Q_r[n]=CalQ_r_perfect(n);
-        Q_s[n]=CalQ_s_perfect(n);
+        Q_r[n]=-zeta2_2[n]/zeta1_2[n];
+        Q_s[n]=-dzeta2_2[n]/dzeta1_2[n];
       } 
+            
       
 //  ........................................................................
 //  .    Calculate translation coefficients when the separation of the     .
