@@ -107,9 +107,6 @@ namespace eccmie {
     std::complex<double> calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
                                  std::complex<double> PsiXL, std::complex<double> ZetaXL,
                                  std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1);
-    void calc_an_bn_bulk(std::vector<std::complex<double> >& an,
-			 std::vector<std::complex<double> >& bn,
-			 double x, std::complex<double> m);
 
     std::complex<double> calc_S1(int n, std::complex<double> an, std::complex<double> bn,
                                  double Pi, double Tau);
@@ -121,9 +118,6 @@ namespace eccmie {
     void calcPsiZeta(std::complex<double> x,
                      std::vector<std::complex<double> >& Psi,
                      std::vector<std::complex<double> >& Zeta);
-    void sbesjh(std::complex<double> z,
-                std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp, 
-                std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np);
     void calcPiTau(const double& costheta,
                    std::vector<double>& Pi, std::vector<double>& Tau);
     void calcSpherHarm(const double Rho, const double Theta, const double Phi,
@@ -133,10 +127,9 @@ namespace eccmie {
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
     void ScattCoeffs();
     void ExpanCoeffs();
-    void ExpanCoeffsV2();
 
-    void fieldExt(const double Rho, const double Theta, const double Phi,
-                  std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
+    void LUDecomp(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
+                  std::vector<std::complex<double> >& indx, int d);
 
     void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
