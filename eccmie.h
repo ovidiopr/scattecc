@@ -130,6 +130,8 @@ namespace eccmie {
 
     void LUDecomp(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
                   std::vector<std::complex<double> >& indx, int d);
+    void LUSolve(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
+                 std::vector<std::complex<double> >& indx, std::vector<std::complex<double> > b);
 
     void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);

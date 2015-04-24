@@ -2046,6 +2046,48 @@ namespace eccmie {
 
 
   //**********************************************************************************//
+  // Solves the set of n linear equations A.X=B. Here A is input, not                 //
+  // as the matrix A but rather as its LU decomp, from LUDCMP.  INDX                  //
+  // is input as the permutation vector returned by LUDCMP. B is input                //
+  // as the right-hand side vector B, and returns with the solution                   //
+  // Vector X.  A,N,NP and INDX are not modified by this routine and                  //
+  // can be left in place for successive calls with different right-hand              //
+  // sides B.  This routine takes into account the possibility that B                 //
+  // can begin with many zero elements, so it is efficient for use in                 //
+  // matrix inversion.                                                                //
+  //**********************************************************************************//
+  void EccentricMie::LUSolve(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
+                             std::vector<std::complex<double> >& indx, std::vector<std::complex<double> > b) {
+
+    std::complex<double> suma;
+    int ii = 0, ll;
+
+    for (int i = 0; i < n; i++) {
+      ll = indx[i];
+      suma = b[ll];
+      b[ll] = b[i];
+
+      if (ii != 0) {
+        for (int j = ii - 1; j< i - 1; j++)
+          suma -= a[i][j]*b[j];
+      } else {
+        if (std::abs(suma) != 0.0)  ii = i;
+      }
+      b[i] = suma;
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+      suma = b[i];
+      if (i < n) {
+        for (int j = i; j< n; j++)
+          suma -= a[i][j]*b[j];
+      }
+      b[i] = suma/a[i][j];
+    }
+  }  // end of void EccentricMie::LUSolve(...)
+
+
+  //**********************************************************************************//
   // This function calculates the electric (E) and magnetic (H) fields inside and     //
   // around the particle.                                                             //
   //                                                                                  //
