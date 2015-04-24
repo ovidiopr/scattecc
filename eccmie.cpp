@@ -687,53 +687,6 @@ namespace eccmie {
 
 
   //**********************************************************************************//
-  // This function calculates the spherical Bessel (jn) and Hankel (h1n) functions    //
-  // and their derivatives for a given complex value z. See pag. 87 B&H.              //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   z: Complex argument to evaluate jn and h1n                                     //
-  //   nmax_: Maximum number of terms to calculate jn and h1n                         //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   jn, h1n: Spherical Bessel and Hankel functions                                 //
-  //   jnp, h1np: Derivatives of the spherical Bessel and Hankel functions            //
-  //                                                                                  //
-  // What we actually calculate are the Ricatti-Bessel fucntions and simply      //
-  // evaluate the spherical Bessel and Hankel functions and their derivatives         //
-  // using the relations:                                                             //
-  //                                                                                  //
-  //     j[n]   = Psi[n]/z                                                            //
-  //     j'[n]  = j[n-1]-(n+1)*jn[n])/z                                               //
-  //     h1[n]  = Zeta[n]/z                                                           //
-  //     h1'[n] = h1[n-1]-(n+1)*h1n[n]/z                                              //
-  //                                                                                  //
-  //**********************************************************************************//
-  void EccentricMie::sbesjh(std::complex<double> z,
-                             std::vector<std::complex<double> >& jn, std::vector<std::complex<double> >& jnp,
-                             std::vector<std::complex<double> >& h1n, std::vector<std::complex<double> >& h1np) {
-
-    std::vector<std::complex<double> > Psi(nmax_ + 1), Zeta(nmax_ + 1);
-
-    // First, calculate the Riccati-Bessel functions
-    calcPsiZeta(z, Psi, Zeta);
-
-    // Now, calculate Spherical Bessel and Hankel functions and their derivatives
-    for (int n = 0; n <= nmax_; n++) {
-      jn[n] = Psi[n]/z;
-      h1n[n] = Zeta[n]/z;
-
-      if (n == 0) {
-        jnp[0] = -Psi[1]/z - jn[0]/z;
-        h1np[0] = -Zeta[1]/z - h1n[0]/z;
-      } else {
-        jnp[n] = jn[n - 1] - static_cast<double>(n + 1)*jn[n]/z;
-       h1np[n] = h1n[n - 1] - static_cast<double>(n + 1)*h1n[n]/z;
-      }
-    }
-  }
-
-
-  //**********************************************************************************//
   // This function calculates Pi and Tau for a given value of cos(Theta).             //
   // Equations (26a) - (26c)                                                          //
   //                                                                                  //
@@ -1587,7 +1540,7 @@ namespace eccmie {
         // . The Q's have the index of the inclusion k2 inside them      .
         // . and the TransAm and TransBm have the displacement d inside  .
         // . them; matrixlu therefore is the 1st to contain both pieces  .
-        // c . of information.  The equations are 33 - 36                    .
+        //   // of information.  The equations are 33 - 36                    .
         // ...............................................................
         fact1 = dzeta_0[n]*(zeta2_1[n] + Qr[np]*zeta1_1[n]);
         fact2 = zeta_0[n]*(dzeta2_1[n] + Qr[np]*dzeta1_1[n]);
@@ -2024,207 +1977,72 @@ namespace eccmie {
 
 
   //**********************************************************************************//
-  // This function calculates the expansion coefficients inside the particle,         //
-  // required to calculate the near-field parameters.                                 //
-  //                                                                                  //
-  // Input parameters:                                                                //
-  //   L: Number of layers                                                            //
-  //   pl: Index of PEC layer. If there is none just send -1                          //
-  //   x: Array containing the size parameters of the layers [0..L-1]                 //
-  //   m: Array containing the relative refractive indexes of the layers [0..L-1]     //
-  //   nmax: Maximum number of multipolar expansion terms to be used for the          //
-  //         calculations. Only use it if you know what you are doing, otherwise      //
-  //         set this parameter to -1 and the function will calculate it.             //
-  //                                                                                  //
-  // Output parameters:                                                               //
-  //   aln, bln, cln, dln: Complex scattering amplitudes inside the particle          //
-  //                                                                                  //
-  // Return value:                                                                    //
-  //   Number of multipolar expansion terms used for the calculations                 //
+  // given nxn matrix a with physical dim NP, this routine replaces it                //
+  // by the LU decomposition of a rowwise permutation of itself.  A and               //
+  // n are input. A is output. INDX is an output vector which records the             //
+  // row permutation effected by the partial pivoting; D is output                    //
+  // as +-1 depending on whether the number of row interchanges                       //
+  // was even or odd.  This routine is used in combination with Lubksb                //
+  // to solve linear equations or invert a matrix.                                    //
   //**********************************************************************************//
-  void EccentricMie::ExpanCoeffsV2() {
-    if (!isScaCoeffsCalc_)
-      throw std::invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
+  void EccentricMie::LUDecomp(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
+                              std::vector<std::complex<double> >& indx, int d) {
 
-    isExpCoeffsCalc_ = false;
+    std::complex<double> suma, cdum, vv(nmax_), aamax;
+    std::complex<double> mytiny(1.0e-80,1.0e-80);
+    double d = 1.0;
 
-    std::complex<double> c_one(1.0, 0.0), c_zero(0.0, 0.0);
-
-    const int L = refractive_index_.size();
-
-    aln_.resize(L + 1);
-    bln_.resize(L + 1);
-    cln_.resize(L + 1);
-    dln_.resize(L + 1);
-    for (int l = 0; l <= L; l++) {
-      aln_[l].resize(nmax_);
-      bln_[l].resize(nmax_);
-      cln_[l].resize(nmax_);
-      dln_[l].resize(nmax_);
+    for (int i = 0; i < n; i++) {
+      aamax = std::complex<double>(0.0, 0.0);
+      for (int j = 0; j < n; j++) {
+        if (std::abs(a[i][j]) > std::abs(aamax)) aamax = a[i][j];
+      }
+      if (std::abs(aamax) == 0) throw std::invalid_argument("Singular matrix!!!");
+      vv[i] = 1.0/aamax;
     }
 
-    // Yang, paragraph under eq. A3
-    // a^(L + 1)_n = a_n, d^(L + 1) = 1 ...
-    for (int n = 0; n < nmax_; n++) {
-      aln_[L][n] = an_[n];
-      bln_[L][n] = bn_[n];
-      cln_[L][n] = c_one;
-      dln_[L][n] = c_one;
+    for (int j = 0; j < n; j++) {
+      for (int i = 0; i < j - 1; i++) {
+        suma = a[i][j];
+        for (int k = 0; k < i - 1; k++)
+          suma -= a[i][k]*a[k][j];
 
-      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, real(dln_[L][n]), std::imag(dln_[L][n]));
-    }
+        a[i][j] = suma;
+      }
 
-    std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
-    std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
-    std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
+      aamax = std::complex<double>(0.0, 0.0);
+      for (int i = j - 1; i < n; i++) {
+        suma = a[i][j];
+        for (int k = 0; k < j - 1; k++)
+          suma -= a[i][k]*a[k][j];
 
-    std::vector<std::vector<std::complex<double> > > a(2);
-    a[0].resize(3);
-    a[1].resize(3);
-
-    auto& m = refractive_index_;
-    std::vector< std::complex<double> > refractive_index_host_(L);
-
-    for (int l = 0; l < L - 1; l++) refractive_index_host_[l] = m[l + 1];
-    refractive_index_host_[L - 1] = std::complex<double> (1.0, 0.0);
-
-    std::complex<double> z, z1;
-    for (int l = L - 1; l >= 0; l--) {
-      z = size_param_[l]*m[l];
-      z1 = size_param_[l]*refractive_index_host_[l];
-
-      calcD1D3(z, D1z, D3z);
-      calcD1D3(z1, D1z1, D3z1);
-      calcPsiZeta(z, Psiz, Zetaz);
-      calcPsiZeta(z1, Psiz1, Zetaz1);
-
-      for (int n = 0; n < nmax_; n++) {
-        int n1 = n + 1;
-
-        a[0][0] = refractive_index_host_[l]*D3z[n1]*Zetaz[n1];
-        a[0][1] = -refractive_index_host_[l]*D1z[n1]*Psiz[n1];
-        a[0][2] = aln_[l + 1][n]*m[l]*D3z1[n1]*Zetaz1[n1];
-        a[0][2] -= dln_[l + 1][n]*m[l]*D1z1[n1]*Psiz1[n1];
-
-        a[1][0] = Zetaz[n1];
-        a[1][1] = -Psiz[n1];
-        a[1][2] = aln_[l + 1][n]*Zetaz1[n1] - dln_[l + 1][n]*Psiz1[n1];
-
-        // aln
-        aln_[l][n] = (a[0][2]*a[1][1] - a[0][1]*a[1][2])/(a[0][0]*a[1][1] - a[0][1]*a[1][0]);
-        // dln
-        dln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
-
-        /*for (int i = 0; i < 2; i++) {
-          for (int j = 0; j < 3; j++) {
-            printf("a[%i, %i] = %g,%g ", i, j, real(a[i][j]), imag(a[i][j]));
+          a[i][j] = suma;
+          cdum = vv(i)*suma;
+          if (std::abs(cdum) >= std::abs(aamax)) {
+            imax = i;
+            aamax = cdum;
           }
-          printf("\n");
+      }
+
+      if (j != imax) {
+        for (int k = 0; k < n; k++) {
+          cdum = a[imax][k];
+          a[imax][k] = a[j][k];
+          a[j][k] = cdum;
         }
-        printf("aln_[%i, %i] = %g,%g; dln_[%i, %i] = %g,%g\n\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));*/
+        d = -d;
+        vv[imax] = vv[j];
+      }
 
-        a[0][0] = D3z[n1]*Zetaz[n1];
-        a[0][1] = -D1z[n1]*Psiz[n1];
-        a[0][2] = bln_[l + 1][n]*D3z1[n1]*Zetaz1[n1];
-        a[0][2] -= cln_[l + 1][n]*D1z1[n1]*Psiz1[n1];
-
-        a[1][0] = refractive_index_host_[l]*Zetaz[n1];
-        a[1][1] = -refractive_index_host_[l]*Psiz[n1];
-        a[1][2] = bln_[l + 1][n]*m[l]*Zetaz1[n1] - cln_[l + 1][n]*m[l]*Psiz1[n1];
-
-        // bln
-        bln_[l][n] = (a[0][2]*a[1][1] - a[0][1]*a[1][2])/(a[0][0]*a[1][1] - a[0][1]*a[1][0]);
-        // cln
-        cln_[l][n] = (a[0][2]*a[1][0] - a[0][0]*a[1][2])/(a[0][1]*a[1][0] - a[0][0]*a[0][1]);
-
-        printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", l, n, real(aln_[l][n]), imag(aln_[l][n]), l, n, real(bln_[l][n]), imag(bln_[l][n]), l, n, real(cln_[l][n]), imag(cln_[l][n]), l, n, real(dln_[l][n]), imag(dln_[l][n]));
-      }  // end of all n
-    }  // end of all l
-
-    // Check the result and change  aln_[0][n] and aln_[0][n] for exact zero
-    for (int n = 0; n < nmax_; ++n) {
-//      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
-//	     real(bln_[0][n]), imag(bln_[0][n]));
-      if (std::abs(aln_[0][n]) < 1e-1) aln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      if (std::abs(bln_[0][n]) < 1e-1) bln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
-    }
-
-    isExpCoeffsCalc_ = true;
-  }  // end of   void EccentricMie::ExpanCoeffs()
-
-
-  // ********************************************************************** //
-  // external scattering field = incident + scattered                       //
-  // BH p.92 (4.37), 94 (4.45), 95 (4.50)                                   //
-  // assume: medium is non-absorbing; refim = 0; Uabs = 0                   //
-  // ********************************************************************** //
-  void EccentricMie::fieldExt(const double Rho, const double Theta, const double Phi,
-                               std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
-
-    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i} // Vector containing precomputed integer powers of i to avoid computation
-    std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
-    std::vector<std::complex<double> > Ei(3, c_zero), Hi(3, c_zero), Es(3, c_zero), Hs(3, c_zero);
-    std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
-    std::vector<double> Pi(nmax_), Tau(nmax_);
-
-    // Calculate spherical Bessel and Hankel functions
-    sbesjh(Rho, jn, jnp, h1n, h1np);
-
-    // Calculate angular functions Pi and Tau
-    calcPiTau(std::cos(Theta), Pi, Tau);
-
-    for (int n = 0; n < nmax_; n++) {
-      int n1 = n + 1;
-      double rn = static_cast<double>(n1);
-
-      // using BH 4.12 and 4.50
-      calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
-
-      // scattered field: BH p.94 (4.45)
-      std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
-      for (int i = 0; i < 3; i++) {
-        Es[i] = Es[i] + En*(c_i*an_[n]*N3e1n[i] - bn_[n]*M3o1n[i]);
-        Hs[i] = Hs[i] + En*(c_i*bn_[n]*N3o1n[i] + an_[n]*M3e1n[i]);
+      indx[j] = imax;
+      if(std::abs(a[j][j]) == 0) a[j][j] = mytiny;
+      if (j != n) {
+        cdum = 1.0/a[j][j];
+        for (int i = j; i < n; i++)
+          a[i][j] = a[i][j]*cdum;
       }
     }
-
-    // incident E field: BH p.89 (4.21); cf. p.92 (4.37), p.93 (4.38)
-    // basis unit vectors = er, etheta, ephi
-    std::complex<double> eifac = std::exp(std::complex<double>(0.0, Rho*std::cos(Theta)));
-    {
-      using std::sin;
-      using std::cos;
-      Ei[0] = eifac*sin(Theta)*cos(Phi);
-      Ei[1] = eifac*cos(Theta)*cos(Phi);
-      Ei[2] = -eifac*sin(Phi);
-    }
-
-    // magnetic field
-    double hffact = 1.0/(cc_*mu_);
-    for (int i = 0; i < 3; i++) {
-      Hs[i] = hffact*Hs[i];
-    }
-
-    // incident H field: BH p.26 (2.43), p.89 (4.21)
-    std::complex<double> hffacta = hffact;
-    std::complex<double> hifac = eifac*hffacta;
-    {
-      using std::sin;
-      using std::cos;
-      Hi[0] = hifac*sin(Theta)*sin(Phi);
-      Hi[1] = hifac*cos(Theta)*sin(Phi);
-      Hi[2] = hifac*cos(Phi);
-    }
-
-    for (int i = 0; i < 3; i++) {
-      // electric field E [V m - 1] = EF*E0
-      E[i] = Ei[i] + Es[i];
-      H[i] = Hi[i] + Hs[i];
-    }
-   }  // end of EccentricMie::fieldExt(...)
+  }  // end of void EccentricMie::LUDecomp(...)
 
 
   //**********************************************************************************//
@@ -2344,13 +2162,6 @@ namespace eccmie {
 
     // Calculate scattering coefficients an_ and bn_
     ScattCoeffs();
-
-    // std::vector<std::complex<double> > an1(nmax_), bn1(nmax_);
-    // calc_an_bn_bulk(an1, bn1, size_param_.back(), refractive_index_.back());
-    // for (int n = 0; n < nmax_; n++) {
-    //   printf("an_[%i] = %11.4er%+10.5ei;  an_bulk_[%i] = %11.4er%+10.5ei\n", n, std::real(an_[n]), std::imag(an_[n]), n, std::real(an1[n]), std::imag(an1[n]));
-    //   printf("bn_[%i] = %11.4er%+10.5ei;  bn_bulk_[%i] = %11.4er%+10.5ei\n", n, std::real(bn_[n]), std::imag(bn_[n]), n, std::real(bn1[n]), std::imag(bn1[n]));
-    // }
 
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
     ExpanCoeffs();
