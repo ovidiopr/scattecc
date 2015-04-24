@@ -854,6 +854,20 @@ namespace eccmie {
     return  -i_*m*xd*c_n_np/(np*(np+1));
   }
 
+  std::complex<double> EccentricMie::Ec40_43 (
+                       std::complex<double> X1, 
+                       std::complex<double> X2,
+                       std::complex<double> Q,
+                       std::complex<double> Trans,
+                       std::complex<double> zeta_o,
+                       std::complex<double> dzeta_o,
+                       std::complex<double> zeta1_1,
+                       std::complex<double> dzeta1_1,
+                       std::complex<double> zeta2_1,
+                       std::complex<double> dzeta2_1)
+                        
+    return Trans*(X1*dzeta_o*(zeta2_1+Q*zeta1_1)-X2*zeta_o*(dzeta2_1+Q*dzeta1_1)) ;                   
+  }
 
 
   //**********************************************************************************//
@@ -1176,10 +1190,10 @@ namespace eccmie {
         matrix[i].resize(numel+1);
         j=0;
         for (np=m;np<nmax_;np++) {
-          matrix[i][j]=T1(m,n,np); // ec. 40
-          matrix[i][j+numel]=U1(m,n,np); // ec. 42
-          matrix[i+numel][j]=T2(m,n,np); // ec. 41
-          matrix[i+numel][j+numel]=U2(m,n,np); // ec. 43
+          matrix[i][j]=Ec40_43(k0,k1,Q_r[np],TransAm[n][np],zeta_o[n],dzeta_o[n],zeta1_1[n],dzeta1_1[n],zeta2_1[n],dzeta2_1[n]); // ec. 40
+          matrix[i][j+numel]=Ec40_43(k0,k1,Q_s[np],TransBm[n][np],zeta_o[n],dzeta_o[n],zeta1_1[n],dzeta1_1[n],zeta2_1[n],dzeta2_1[n]); // ec. 42
+          matrix[i+numel][j]=Ec40_43(k1,k0,Q_r[np],TransBm[n][np],zeta_o[n],dzeta_o[n],zeta1_1[n],dzeta1_1[n],zeta2_1[n],dzeta2_1[n]); // ec. 41
+          matrix[i+numel][j+numel]=Ec40_43(k1,k0,Q_s[np],TransAm[n][np],zeta_o[n],dzeta_o[n],zeta1_1[n],dzeta1_1[n],zeta2_1[n],dzeta2_1[n]); // ec. 43
           j++; 
         } //np
         ganma_n=Ganma_n(n); // ec. 39
