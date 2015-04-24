@@ -1166,13 +1166,8 @@ namespace eccmie {
         for (np=0; np < 2*nmax_+1; np++)
           cuplom1[n][np]=cuplom[n][np];
       
-//      do 160 n=m,2*nbg-m
-//        do 159 np=m,2*nbg-m
-
-//    Why the rito?
-      
-      for (n)
-        for (np) 
+      for (n = m; n < nmax_; n++)
+        for (np = m; np < 2 * nmax_-m; np++) 
           cuplom[n,np]=Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
 
     } // if m>0
@@ -1201,16 +1196,20 @@ namespace eccmie {
 //    .     for the TE case and store them in aa(i) and ba(i)       .
 //    ...............................................................
       
-      double x, factor;
+      double cos_alpha, factor;
+      std::vector<std::vector<std::complex<double> > > Pi(nmax_),Tau(nmax_);
       
-      x=std::cos(pi*angle_inc_/180.);
-      
+      cos_alpha=std::cos(pi*angle_inc_/180.);
+
+      calcPiTau (cos_alpha, Pi, Tau);
       for (n = m; n < nmax_; n++) {
         factor = 2 * std::pow(i_, n + 2) / (n * n + n);
-        aa[n] = factor * tau(n, m, x);
-        ba[n] = factor * m * pie(n, m, x);
+        aa[n] = factor * Tau[m][n];
+        ba[n] = factor * m * Pi[m][n];
       }
        
+    
+    
     
     
     } // loop m 
