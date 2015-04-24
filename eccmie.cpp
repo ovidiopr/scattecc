@@ -859,14 +859,14 @@ namespace eccmie {
                        std::complex<double> X2,
                        std::complex<double> Q,
                        std::complex<double> Trans,
-                       std::complex<double> Zeta_1_0,
+                       std::complex<double> Zeta1_0,
                        std::complex<double> D3_0,
-                       std::complex<double> Zeta_1_1,
+                       std::complex<double> Zeta1_1,
                        std::complex<double> D3_1,
-                       std::complex<double> Zeta_2_1,
+                       std::complex<double> Zeta2_1,
                        std::complex<double> D4_1)
                         
-    return Trans*(X1*D3_0*(Zeta_2_1+Q*Zeta_1_1)-X2*Zeta_1_0*(D4_1+Q*D3_1)) ;                   
+    return Trans*(X1*D3_0*(Zeta2_1+Q*Zeta1_1)-X2*Zeta1_0*(D4_1+Q*D3_1)) ;                   
   }
 
 
@@ -914,6 +914,7 @@ namespace eccmie {
 // =============================================================================
 
     
+    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
     std::complex<double> k0, k1, k2, x0, x1, x2, x3, xd, i_;
     double wavel;
     
@@ -989,45 +990,54 @@ namespace eccmie {
 
 //  .......................................................................
 //  .    Calculate Riccati-Bessel Functions and Derivatives needed        .
-//  .     Note that Zeta_1_0  means zeta at k0a1=x0
-//  .     and       Zeta_1_1 means the 1st zeta at k1a1=x1                 .
-//  .     and       Zeta_2_1 means the 2nd zeta at k1a1=x1                 .
-//  .     and       Zeta_1_2 means the 1st zeta at k1a2=x2                 .
-//  .     and       Zeta_2_2 means the 2nd zeta at k1a2=x2                 .
-//  .     and       Zeta_2_2 means the 2nd zeta at k1a2=x2                 .
+//  .     Note that Zeta1_0  means zeta at k0a1=x0
+//  .     and       Zeta1_1 means the 1st zeta at k1a1=x1                 .
+//  .     and       Zeta2_1 means the 2nd zeta at k1a1=x1                 .
+//  .     and       Zeta1_2 means the 1st zeta at k1a2=x2                 .
+//  .     and       Zeta2_2 means the 2nd zeta at k1a2=x2                 .
+//  .     and       Zeta2_2 means the 2nd zeta at k1a2=x2                 .
 //  .......................................................................
         
-    std::vector<std::complex<double> > Zeta_1_0, D3_0, Zeta_1_1, D3_1;
-    std::vector<std::complex<double> > Zeta_2_1, D4_1, Zeta_1_2, D3_2;
-    std::vector<std::complex<double> > Zeta_2_2, D4_2, Psi_2, D1_2;
-    
-    init_vector (Zeta_1_0, nmax_);
-    init_vector (D3_0, nmax_);
-    init_complex_vector (Zeta_1_1, nmax_);
-    init_complex_vector (D3_1, nmax_);
-    init_complex_vector (Zeta_2_1, nmax_);
-    init_complex_vector (D4_1, nmax_);
-    init_complex_vector (Zeta_1_2, nmax_);
-    init_complex_vector (D3_2, nmax_);
-    init_complex_vector (Zeta_2_2, nmax_);
-    init_complex_vector (D4_2, nmax_);
-    init_complex_vector (Psi_2, nmax_);
-    init_complex_vector (D1_2, nmax_);
+    std::vector<std::complex<double> > Zeta1_0(nmax_ + 1, c_zero), D3_0(nmax_ + 1, c_zero);
+    std::vector<std::complex<double> > Zeta1_1(nmax_ + 1, c_zero), D3_1(nmax_ + 1, c_zero);
+    std::vector<std::complex<double> > Zeta2_1(nmax_ + 1, c_zero), D4_1(nmax_ + 1, c_zero);
+    std::vector<std::complex<double> > Zeta1_2(nmax_ + 1, c_zero), D3_2(nmax_ + 1, c_zero);
+    std::vector<std::complex<double> > Zeta2_2(nmax_ + 1, c_zero), D4_2(nmax_ + 1, c_zero);
+    std::vector<std::complex<double> > Psi_1(nmax_ + 1, c_zero), D1_1(nmax_ + 1, c_zero);
+    std::vector<std::complex<double> > Psi_2(nmax_ + 1, c_zero), D1_2(nmax_ + 1, c_zero);
 
-    if (!riccati(nmax_,besj_o,psi_o,dpsi_o,x0.r))
-      throw std::invalid_argument("Error riccati function");
-    if (!c_riccati(nmax_,hankel_o,Zeta_1_0,D3_0,x0))
+
+    //if (!riccati(nmax_,besj_o,Psi_0,D1_0,x0.r))
+    //  throw std::invalid_argument("Error riccati function");
+    //if (!c_riccati(nmax_,hankel_o,Zeta1_0,D3_0,x0))
+    //  throw std::invalid_argument("Error c_riccati function");
+    // For z=x0
+    // First, calculate the logarithmic derivatives
+    calcD1D3(x0, D1_0, D3_0);
+    // Now, calculate Riccati-Bessel funxtions
+    calcPsiZeta(x0, Psi_0, Zeta1_0);
+
+    //if (!c_riccati(nmax_,hankel1_1,Zeta1_1,D3_1,x1))
+    //  throw std::invalid_argument("Error c_riccati function");
+    //if (!c_riccati(nmax_,hankel2_1,Zeta2_1,D4_1,x1))
+    //  throw std::invalid_argument("Error c_riccati function");
+    // For z=x1
+    // First, calculate the logarithmic derivatives
+    calcD1D3(x1, D1_1, D3_1);
+    // Now, calculate Riccati-Bessel funxtions
+    calcPsiZeta(x1, Psi_1, Zeta1_1);
+
+    if (!c_riccati(nmax_,hankel1_2,Zeta1_2,D3_2,x2))
       throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nmax_,hankel1_1,Zeta_1_1,D3_1,x1))
-      throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nmax_,hankel2_1,Zeta_2_1,D4_1,x1))
-      throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nmax_,hankel1_2,Zeta_1_2,D3_2,x2))
-      throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nmax_,hankel2_2,Zeta_2_2,D4_2,x2))
+    if (!c_riccati(nmax_,hankel2_2,Zeta2_2,D4_2,x2))
       throw std::invalid_argument("Error c_riccati function");
     if (!c_riccati(nmax_,besj_2,Psi_2,D1_2,x3))
       throw std::invalid_argument("Error c_riccati function");        
+    // For z=x2
+    // First, calculate the logarithmic derivatives
+    calcD1D3(x2, D1_2, D3_2);
+    // Now, calculate Riccati-Bessel funxtions
+    calcPsiZeta(x2, Psi_2, Zeta1_2);
         
 //  .......................................................................
 //  .     Now we must solve for the Quality factors by using equations    .
@@ -1191,13 +1201,13 @@ namespace eccmie {
         matrix[i].resize(numel+1);
         j=0;
         for (np=m;np<nmax_;np++) {
-          matrix[i][j]=Ec40_43(k0,k1,Q_r[np],TransAm[n][np],Zeta_1_0[n],D3_0[n],Zeta_1_1[n],D3_1[n],Zeta_2_1[n],D4_1[n]); // ec. 40
-          matrix[i][j+numel]=Ec40_43(k0,k1,Q_s[np],TransBm[n][np],Zeta_1_0[n],D3_0[n],Zeta_1_1[n],D3_1[n],Zeta_2_1[n],D4_1[n]); // ec. 42
-          matrix[i+numel][j]=Ec40_43(k1,k0,Q_r[np],TransBm[n][np],Zeta_1_0[n],D3_0[n],Zeta_1_1[n],D3_1[n],Zeta_2_1[n],D4_1[n]); // ec. 41
-          matrix[i+numel][j+numel]=Ec40_43(k1,k0,Q_s[np],TransAm[n][np],Zeta_1_0[n],D3_0[n],Zeta_1_1[n],D3_1[n],Zeta_2_1[n],D4_1[n]); // ec. 43
+          matrix[i][j]=Ec40_43(k0,k1,Q_r[np],TransAm[n][np],Zeta1_0[n],D3_0[n],Zeta1_1[n],D3_1[n],Zeta2_1[n],D4_1[n]); // ec. 40
+          matrix[i][j+numel]=Ec40_43(k0,k1,Q_s[np],TransBm[n][np],Zeta1_0[n],D3_0[n],Zeta1_1[n],D3_1[n],Zeta2_1[n],D4_1[n]); // ec. 42
+          matrix[i+numel][j]=Ec40_43(k1,k0,Q_r[np],TransBm[n][np],Zeta1_0[n],D3_0[n],Zeta1_1[n],D3_1[n],Zeta2_1[n],D4_1[n]); // ec. 41
+          matrix[i+numel][j+numel]=Ec40_43(k1,k0,Q_s[np],TransAm[n][np],Zeta1_0[n],D3_0[n],Zeta1_1[n],D3_1[n],Zeta2_1[n],D4_1[n]); // ec. 43
           j++; 
         } //np
-        ganma_n=k1*(dzeta_o[n]*psi_o[n]-dpsi_o[n]*zeta_o[n]); //Ecuation 39 
+        ganma_n=k1*(dzeta_o[n]*Psi_0[n]-D1_0[n]*zeta_o[n]); //Ecuation 39 
         matrix[i][j]=aa[n]*ganma_n;
         matrix[i+numel][j]=ba[n]*ganma_n;
         i++;
@@ -1248,10 +1258,10 @@ namespace eccmie {
     std::vector<std::complex<double> > Jb_0(nmax_ + 2), tmp(nmax_ + 2), psi_0(nmax_ + 2), dpsi_0(nmax_ + 2);
     std::vector<std::complex<double> > Hk_0(nmax_ + 2), ctmp(nmax_ + 2), zeta_0(nmax_ + 2), dzeta_0(nmax_ + 2);
     // For the HOST SPHERE, all the arrays need be at least nmax_
-    std::vector<std::complex<double> > Hk1_1(nmax_ + 2), Zeta_1_1(nmax_ + 2), D3_1(nmax_ + 2), Hk2_1(nmax_ + 2), Zeta_2_1(nmax_ + 2), D4_1(nmax_ + 2);
+    std::vector<std::complex<double> > Hk1_1(nmax_ + 2), Zeta1_1(nmax_ + 2), D3_1(nmax_ + 2), Hk2_1(nmax_ + 2), Zeta2_1(nmax_ + 2), D4_1(nmax_ + 2);
     // For the INCLUSION SPHERE
-    std::vector<std::complex<double> > Jb_2(nmax_ + 2), Psi_2(nmax_ + 2), D1_2(nmax_ + 2), Hk1_2(nmax_ + 2), Zeta_1_2(nmax_ + 2), D3_2(nmax_ + 2);
-    std::vector<std::complex<double> > Hk2_2(nmax_ + 2), Zeta_2_2(nmax_ + 2), D4_2(nmax_ + 2);
+    std::vector<std::complex<double> > Jb_2(nmax_ + 2), Psi_2(nmax_ + 2), D1_2(nmax_ + 2), Hk1_2(nmax_ + 2), Zeta1_2(nmax_ + 2), D3_2(nmax_ + 2);
+    std::vector<std::complex<double> > Hk2_2(nmax_ + 2), Zeta2_2(nmax_ + 2), D4_2(nmax_ + 2);
     // For the separation, and Jb_d need be at least 4*nmax_
     std::vector<std::complex<double> > Jb_d(4*nmax_ + 2);
     // For the Internal Coefficients
@@ -1312,19 +1322,19 @@ namespace eccmie {
       zeta_0[i] = 0.0;
       dzeta_0[i] = 0.0;
       Hk1_1[i] = 0.0;
-      Zeta_1_1[i] = 0.0;
+      Zeta1_1[i] = 0.0;
       D3_1[i] = 0.0;
       Hk2_1[i] = 0.0;
-      Zeta_2_1[i] = 0.0;
+      Zeta2_1[i] = 0.0;
       D4_1[i] = 0.0;
       Jb_2[i] = 0.0;
       Psi_2[i] = 0.0;
       D1_2[i] = 0.0;
       Hk1_2[i] = 0.0;
-      Zeta_1_2[i] = 0.0;
+      Zeta1_2[i] = 0.0;
       D3_2[i] = 0.0;
       Hk2_2[i] = 0.0;
-      Zeta_2_2[i] = 0.0;
+      Zeta2_2[i] = 0.0;
       D4_2[i] = 0.0;
     }
 
@@ -1372,9 +1382,9 @@ namespace eccmie {
         fact2 = TransBm[np][n]*UintTE[m, np]*fact2;
         sum1 = fact1 + fact2 + sum1;
 
-        fact3 = Zeta_2_1[n] + Qr[np]*Zeta_1_1[n];
+        fact3 = Zeta2_1[n] + Qr[np]*Zeta1_1[n];
         fact3 = TransBm[np][n]*TintTE[m, np]*fact3;
-        fact4 = Zeta_2_1[n] + Qs[np]*Zeta_1_1[n];
+        fact4 = Zeta2_1[n] + Qs[np]*Zeta1_1[n];
         fact4 = TransAm[np][n]*UintTE[m, np]*fact4;
         sum2 = sum2 + fact3 + fact4;
       }
@@ -1413,9 +1423,9 @@ namespace eccmie {
         fact2 = TransBm[np][n]*UintTM[m, np]*fact2;
         sum1 = fact1 + fact2 + sum1;
 
-        fact3 = Zeta_2_1[n] + Qr[np]*Zeta_1_1[n];
+        fact3 = Zeta2_1[n] + Qr[np]*Zeta1_1[n];
         fact3 = TransBm[np][n]*TintTM[m, np]*fact3;
-        fact4 = Zeta_2_1[n] + Qs[np]*Zeta_1_1[n];
+        fact4 = Zeta2_1[n] + Qs[np]*Zeta1_1[n];
         fact4 = TransAm[np][n]*UintTM[m, np]*fact4;
         sum2 = sum2 + fact3 + fact4;
       }
