@@ -1164,13 +1164,14 @@ namespace eccmie {
 //    Fill the matrix and load de solution vectors (aa & ba) in the last column
 
       
-      std::vector<std::vector<std::complex<double> > > matrix(nmax_);
+      std::vector<std::vector<std::complex<double> > > matrix;
       // matriz [nmax_-m][nmax_-m+1]
       int numel, j;
       
       numel=nmax_-m;
       
       i=0; 
+      matrix.resize(numel);
       for (n=m;n<nmax_;n++) {
         matrix[i].resize(numel+1);
         j=0;
