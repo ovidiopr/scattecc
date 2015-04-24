@@ -869,6 +869,19 @@ namespace eccmie {
     return Trans*(X1*dzeta_o*(zeta2_1+Q*zeta1_1)-X2*zeta_o*(dzeta2_1+Q*dzeta1_1)) ;                   
   }
 
+  std::complex<double> EccentricMie::CalQ (
+                       std::complex<double> X1, 
+                       std::complex<double> X2,
+                       std::complex<double> psi_2,
+                       std::complex<double> dpsi_2,
+                       std::complex<double> zeta1_2,
+                       std::complex<double> dzeta1_2,
+                       std::complex<double> zeta2_2,
+                       std::complex<double> dzeta2_2)
+                        
+    return  (X1*dzeta2_2*psi_2-X2*zeta2_2*dpsi_2)/(X2*zeta1_2*dpsi_2-X1*dzeta1_2*psi_2);
+  }
+
 
   //**********************************************************************************//
   // This function calculates the actual scattering parameters and amplitudes         //
@@ -1046,8 +1059,8 @@ namespace eccmie {
 
     if (refractive_index_inc_.r > 0.0) 
       for (n = 0; n < nmax_; n++) {
-        Q_r[n]=CalQ_r(n); //ec. 17
-        Q_s[n]=CalQ_s(n); //ec. 18
+        Q_r[n]=CalQ(k1,k2,psi_2[n],dpsi_2[n],zeta1_2[n],dzeta1_2[n],zeta2_2[n],dzeta2_2[n]); //ec. 17
+        Q_s[n]=CalQ(k2,k1,psi_2[n],dpsi_2[n],zeta1_2[n],dzeta1_2[n],zeta2_2[n],dzeta2_2[n]); //ec. 18
       }
     else // The inclusion is a perfect conductor
       for (n = 0; n < nmax_; n++) {
