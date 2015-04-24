@@ -1179,6 +1179,7 @@ namespace eccmie {
 
       
       std::vector<std::vector<std::complex<double> > > matrix;
+      std::complex<double> ganma_n;
       // matriz [nmax_-m][nmax_-m+1]
       int numel, j;
       
@@ -1196,7 +1197,7 @@ namespace eccmie {
           matrix[i+numel][j+numel]=Ec40_43(k1,k0,Q_s[np],TransAm[n][np],Zeta_1_0[n],D3_0[n],Zeta_1_1[n],D3_1[n],zeta2_1[n],D4_1[n]); // ec. 43
           j++; 
         } //np
-        ganma_n=Ganma_n(n); // ec. 39
+        ganma_n=k1*(dzeta_o[n]*psi_o[n]-dpsi_o[n]*zeta_o[n]); //Ecuation 39 
         matrix[i][j]=aa[n]*ganma_n;
         matrix[i+numel][j]=ba[n]*ganma_n;
         i++;
