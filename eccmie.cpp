@@ -872,14 +872,14 @@ namespace eccmie {
   std::complex<double> EccentricMie::CalQ (
                        std::complex<double> X1, 
                        std::complex<double> X2,
-                       std::complex<double> psi_2,
-                       std::complex<double> dpsi_2,
-                       std::complex<double> zeta1_2,
-                       std::complex<double> dzeta1_2,
-                       std::complex<double> zeta2_2,
-                       std::complex<double> dzeta2_2)
+                       std::complex<double> Psi_2,
+                       std::complex<double> D1_2,
+                       std::complex<double> Zeta1_2,
+                       std::complex<double> D3_2,
+                       std::complex<double> Zeta2_2,
+                       std::complex<double> D4_2)
                         
-    return  (X1*dzeta2_2*psi_2-X2*zeta2_2*dpsi_2)/(X2*zeta1_2*dpsi_2-X1*dzeta1_2*psi_2);
+    return  (X1*D4_2*Psi_2-X2*Zeta2_2*D1_2)/(X2*Zeta1_2*D1_2-X1*D3_2*Psi_2);
   }
 
 
@@ -1040,12 +1040,12 @@ namespace eccmie {
     // Now, calculate Riccati-Bessel funxtions
     calcPsiZeta(x1, Psi_1, Zeta1_1);
 
-    if (!c_riccati(nmax_,hankel1_2,Zeta1_2,D3_2,x2))
-      throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nmax_,hankel2_2,Zeta2_2,D4_2,x2))
-      throw std::invalid_argument("Error c_riccati function");
-    if (!c_riccati(nmax_,besj_2,Psi_2,D1_2,x3))
-      throw std::invalid_argument("Error c_riccati function");        
+    //if (!c_riccati(nmax_,hankel1_2,Zeta1_2,D3_2,x2))
+    //  throw std::invalid_argument("Error c_riccati function");
+    //if (!c_riccati(nmax_,hankel2_2,Zeta2_2,D4_2,x2))
+    //  throw std::invalid_argument("Error c_riccati function");
+    //if (!c_riccati(nmax_,besj_2,Psi_2,D1_2,x3))
+    //  throw std::invalid_argument("Error c_riccati function");        
     // For z=x2
     // First, calculate the logarithmic derivatives
     calcD1D3(x2, D1_2, D3_2);
@@ -1069,8 +1069,8 @@ namespace eccmie {
 
     if (refractive_index_inc_.r > 0.0) 
       for (n = 0; n < nmax_; n++) {
-        Q_r[n]=CalQ(k1,k2,psi_2[n],dpsi_2[n],zeta1_2[n],dzeta1_2[n],zeta2_2[n],dzeta2_2[n]); //ec. 17
-        Q_s[n]=CalQ(k2,k1,psi_2[n],dpsi_2[n],zeta1_2[n],dzeta1_2[n],zeta2_2[n],dzeta2_2[n]); //ec. 18
+        Q_r[n]=CalQ(k1,k2,Psi_2[n],D1_2[n],Zeta1_2[n],D3_2[n],Zeta2_2[n],D4_2[n]); //ec. 17
+        Q_s[n]=CalQ(k2,k1,Psi_2[n],D1_2[n],Zeta1_2[n],D3_2[n],Zeta2_2[n],D4_2[n]); //ec. 18
       }
     else // The inclusion is a perfect conductor
       for (n = 0; n < nmax_; n++) {
