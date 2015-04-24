@@ -1160,36 +1160,36 @@ namespace eccmie {
 //  . Use equation 26                                              .
 //  ................................................................
     
-    if (m > 0) { 
-      //save the last cuplom in cuplom1
-      for (n=0; n < nmax_; n++)
-        for (np=0; np < 2*nmax_+1; np++)
-          cuplom1[n][np]=cuplom[n][np];
+      if (m > 0) { 
+        //save the last cuplom in cuplom1
+        for (n=0; n < nmax_; n++)
+          for (np=0; np < 2*nmax_+1; np++)
+            cuplom1[n][np]=cuplom[n][np];
       
-      for (n = m; n < nmax_; n++)
-        for (np = m; np < 2 * nmax_-m; np++) 
-          cuplom[n,np]=Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
+        for (n = m; n < nmax_; n++)
+          for (np = m; np < 2 * nmax_-m; np++) 
+            cuplom[n,np]=Equation26(m,n,np,xd,cuplom1[n][np],cuplom1[n][np+1],cuplom1[n][np-1]);
 
-    } // if m>0
+      } // if m>0
      
-//  ..................................................
-//  . Cuplom(n,np) now has the most recent values    .
-//  . for the most recent value of m.                .
-//  ..................................................
+//    ..................................................
+//    . Cuplom(n,np) now has the most recent values    .
+//    . for the most recent value of m.                .
+//    ..................................................
 
-//  ............................................................
-//  . Now that we have the matrix which contains the C(n,m)np  .
-//  . we can go ahead and find the translation coefficients    .
-//  . A(n,m)np and B(n,m)np by using eqns 21 & 22. Note,       .
-//  . we do need to store TransAm and TransBm into a matrix    .
-//  . like we did for the C(n,m)np for later manipulation      .
-//  ............................................................
+//    ............................................................
+//    . Now that we have the matrix which contains the C(n,m)np  .
+//    . we can go ahead and find the translation coefficients    .
+//    . A(n,m)np and B(n,m)np by using eqns 21 & 22. Note,       .
+//    . we do need to store TransAm and TransBm into a matrix    .
+//    . like we did for the C(n,m)np for later manipulation      .
+//    ............................................................
       
-    for (n = m; n < nmax_; n++) 
-      for (np = m; np < nmax_; np++) {
-        TransAm[n][np]=Equation21(m,np,xd,cuplom[n][np],cuplom[n][np+1],cuplom[n][np-1]);
-        TransBm[n][np]=Equation22(m,np,xd,cuplom[n][np]);        
-      }  
+      for (n = m; n < nmax_; n++) 
+        for (np = m; np < nmax_; np++) {
+          TransAm[n][np]=Equation21(m,np,xd,cuplom[n][np],cuplom[n][np+1],cuplom[n][np-1]);
+          TransBm[n][np]=Equation22(m,np,xd,cuplom[n][np]);        
+        }  
       
 //    ...............................................................
 //    .     Now we will calculate the incident field coefficients   .
@@ -1208,7 +1208,37 @@ namespace eccmie {
         ba[n] = factor * m * Pi[m][n];
       }
        
-    
+//    Fill the matrix and load de solution vectors (aa & ba) in the last column
+
+      
+      std::vector<std::vector<std::complex<double> > > matrix(nmax_);
+      // matriz [nmax_-m][nmax_-m+1]
+      int numel, j;
+      
+      numel=nmax_-m;
+      
+      i=0; 
+      for (n=m;n<nmax_;n++) {
+        matrix[i].resize(numel+1);
+        j=0;
+        for (np=m;np<nmax_;np++) {
+          matrix[i][j]=T1(m,n,np); // ec. 40
+          matrix[i][j+numel]=U1(m,n,np); // ec. 42
+          matrix[i+numel][j]=T2(m,n,np); // ec. 41
+          matrix[i+numel][j+numel]=U2(m,n,np); // ec. 43
+          j++; 
+        } //np
+        ganma_n=Ganma_n(n); // ec. 39
+        matrix[i][j]=aa[n]*ganma_n;
+        matrix[i+numel][j]=ba[n]*ganma_n;
+        i++;
+      } //n
+      
+//    ................................................................
+//    . THE MATRIX IS FILLED!!  For TE case                          .
+//    ................................................................
+
+
     
     
     
