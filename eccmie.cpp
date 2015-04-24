@@ -1074,8 +1074,8 @@ namespace eccmie {
       }
     else // The inclusion is a perfect conductor
       for (n = 0; n < nmax_; n++) {
-        Q_r[n]=-zeta2_2[n]/zeta1_2[n];
-        Q_s[n]=-dzeta2_2[n]/dzeta1_2[n];
+        Q_r[n]=-Zeta2_2[n]/Zeta1_2[n];
+        Q_s[n]=-D4_2[n]/D3_2[n];
       } 
             
       
