@@ -119,7 +119,7 @@ namespace eccmie {
                      std::vector<std::complex<double> >& Psi,
                      std::vector<std::complex<double> >& Zeta);
     void calcPiTau(const double& costheta,
-                   std::vector<double>& Pi, std::vector<double>& Tau);
+                   std::vector<std::vector<double> >& Pi, std::vector<std::vector<double> >& Tau);
     void calcSpherHarm(const double Rho, const double Theta, const double Phi,
                        const std::complex<double>& zn, const std::complex<double>& dzn,
                        const double& Pi, const double& Tau, const double& n,
@@ -128,10 +128,30 @@ namespace eccmie {
     void ScattCoeffs();
     void ExpanCoeffs();
 
+    std::complex<double> Ecuation25(int n, int np, std::complex<double> c_n_npminus1,
+                                    std::complex<double> c_nminus1_np, std::complex<double> c_n_npplus1);
+    std::complex<double> Equation26(int m, int n, int np,
+                                    std::complex<double> xd, std::complex<double> c_n_np,
+                                    std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1);
+    std::complex<double> Equation21(int m, int np,
+                                    std::complex<double> xd, std::complex<double> c_n_np,
+                                    std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1);
+    std::complex<double> Equation22(int m, int np,
+                                    std::complex<double> xd, std::complex<double> c_n_np);
+    std::complex<double> Ec40_43(std::complex<double> k, std::complex<double> k1,
+                                 std::complex<double> Q, std::complex<double> Trans,
+                                 std::complex<double> Psi_1, std::complex<double> D1_1,
+                                 std::complex<double> D3_0,
+                                 std::complex<double> Zeta1_1, std::complex<double> D3_1);
+    std::complex<double> CalQ(std::complex<double> k1, std::complex<double> k2,
+                              std::complex<double> Psi, std::complex<double> D1,
+                              std::complex<double> Zeta1, std::complex<double> D3);
+
+
     void LUDecomp(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
-                  std::vector<std::complex<double> >& indx, int d);
+                  std::vector<int>& indx, int d);
     void LUSolve(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
-                 std::vector<std::complex<double> >& indx, std::vector<std::complex<double> > b);
+                 std::vector<int>& indx, std::vector<std::complex<double> > b);
 
     void calcField(const double Rho, const double Theta, const double Phi,
                    std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H);
