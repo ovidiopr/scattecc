@@ -123,7 +123,7 @@ namespace eccmie {
     void calcSpherHarm(const double Rho, const double Theta, const double Phi,
                        const std::complex<double>& zn, const std::complex<double>& dzn,
                        const double& Pi, const double& Tau, const double& n,
-                       std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n, 
+                       std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n,
                        std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n);
     void ScattCoeffs();
     void ExpanCoeffs();
