@@ -44,11 +44,11 @@ const double PI=3.14159265358979323846;
 // This is the main function of 'scattecc', here we read the parameters as           //
 // arguments passed to the program which should be executed with the following       //
 // syntaxis:                                                                         //
-// ./scattecc -l xi mi.r mi.i xh mh.r mh.i -s dx -i aoi [-t ti tf nt] [-c comment]   //
+// ./scattecc -l xi mi.r mi.i xh mh.r mh.i -s xd -i aoi [-t ti tf nt] [-c comment]   //
 //                                                                                   //
 // When all the parameters were correctly passed we setup xi (xh) and mi (mh),       //
 // containing the size parameters and refractive indexes of the inclusion (host,     //
-// respectively. We also set dx (shift of the inclusion) and aoi (angle of incidence //
+// respectively. We also set xd (shift of the inclusion) and aoi (angle of incidence //
 // and then call the function eccMie.                                                //
 // If the calculation is successful the results are printed with the following       //
 // format:                                                                           //
@@ -65,14 +65,14 @@ int main(int argc, char *argv[]) {
     args.assign(argv, argv + argc);
     std::string error_msg(std::string("Insufficient parameters.\nUsage: ") + args[0]
                           + " -l xi mi.r mi.i xh mh.r mh.i "
-                          + " -s dx -i aoi "
+                          + " -s xd -i aoi "
                           + "[-t ti tf nt] [-c comment]\n");
-    enum mode_states {nothing, read_xi, read_xh, read_mi_r, read_mi_i, read_mh_r, read_mh_i, read_dx, read_aoi, read_ti, read_tf, read_nt, read_comment};
+    enum mode_states {nothing, read_xi, read_xh, read_mi_r, read_mi_i, read_mh_r, read_mh_i, read_xd, read_aoi, read_ti, read_tf, read_nt, read_comment};
     // for (auto arg : args) std::cout<< arg <<std::endl;
     std::string comment;
     int has_comment = 0;
     int i;
-    double xi, xh, dx, aoi;
+    double xi, xh, xd, aoi;
     std::vector<double> Theta;
     std::complex<double> mi, mh;
     std::vector<std::complex<double> > S1, S2;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
       }
 
       if (arg == "-s") {
-        mode = read_dx;
+        mode = read_xd;
         continue;
       }
 
@@ -158,8 +158,8 @@ int main(int argc, char *argv[]) {
         continue;
       }
 
-      if (mode == read_dx) {
-        dx = std::stod(arg);
+      if (mode == read_xd) {
+        xd = std::stod(arg);
         mode = nothing;
         continue;
       }
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    eccmie::eccMie(xi, xh, mi, mh, dx, aoi, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
+    eccmie::eccMie(xi, xh, mi, mh, xd, aoi, nt, Theta, &Qext, &Qsca, &Qabs, &Qbk, &Qpr, &g, &Albedo, S1, S2);
 
     if (has_comment) {
       printf("%6s, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e, %+.5e\n", comment.c_str(), Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo);

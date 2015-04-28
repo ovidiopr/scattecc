@@ -45,6 +45,8 @@
 #include <stdexcept>
 #include <vector>
 
+using namespace std;
+
 namespace eccmie {
   //helpers
   template<class T> inline T pow2(const T value) {return value*value;}
@@ -63,7 +65,8 @@ namespace eccmie {
   //   pl: Index of PEC layer (None: -1; Inclusion: 0; Host: 1)                       //
   //   mi: Relative refractive index of the inclusion sphere                          //
   //   mh: Relative refractive index of the host sphere                               //
-  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   xd: Size parameter of the shift of the inclusion with respect to the center    //
+  //       of the host                                                                //
   //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
@@ -85,17 +88,17 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(double& xi, double& xh, const int pl, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
+  int eccMie(double& xi, double& xh, const int pl, complex<double>& mi, complex<double>& mh, double& xd, double& alpha, const unsigned int nTheta, vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2) {
 
     if (Theta.size() != nTheta)
-        throw std::invalid_argument("Declared number of sample for Theta is not correct!");
+        throw invalid_argument("Declared number of sample for Theta is not correct!");
     try {
       EccentricMie eccentric_mie;
       eccentric_mie.SetIncSize(xi);
       eccentric_mie.SetHostSize(xh);
       eccentric_mie.SetIncIndex(mi);
       eccentric_mie.SetHostIndex(mh);
-      eccentric_mie.SetIncShift(dx);
+      eccentric_mie.SetIncShift(xd);
       eccentric_mie.SetIncAngle(alpha);
       eccentric_mie.SetAngles(Theta);
 
@@ -112,10 +115,10 @@ namespace eccmie {
       *Albedo = eccentric_mie.GetAlbedo();
       S1 = eccentric_mie.GetS1();
       S2 = eccentric_mie.GetS2();
-    } catch(const std::invalid_argument& ia) {
+    } catch(const invalid_argument& ia) {
       // Will catch if  eccentric_mie fails or other errors.
-      std::cerr << "Invalid argument: " << ia.what() << std::endl;
-      throw std::invalid_argument(ia);
+      cerr << "Invalid argument: " << ia.what() << endl;
+      throw invalid_argument(ia);
       return -1;
     }
     return 0;
@@ -133,7 +136,8 @@ namespace eccmie {
   //   xh: Size parameter of the host sphere                                          //
   //   mi: Relative refractive index of the inclusion sphere                          //
   //   mh: Relative refractive index of the host sphere                               //
-  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   xd: Size parameter of the shift of the inclusion with respect to the center    //
+  //       of the host                                                                //
   //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
@@ -152,8 +156,8 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(double& xi, double& xh, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return eccmie::eccMie(xi, xh, -1, mi, mh, dx, alpha, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  int eccMie(double& xi, double& xh, complex<double>& mi, complex<double>& mh, double& xd, double& alpha, const unsigned int nTheta, vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2) {
+    return eccmie::eccMie(xi, xh, -1, mi, mh, xd, alpha, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
@@ -168,7 +172,8 @@ namespace eccmie {
   //   pl: Index of PEC layer (None: -1; Inclusion: 0; Host: 1)                       //
   //   mi: Relative refractive index of the inclusion sphere                          //
   //   mh: Relative refractive index of the host sphere                               //
-  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   xd: Size parameter of the shift of the inclusion with respect to the center    //
+  //       of the host                                                                //
   //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
@@ -187,8 +192,8 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(double& xi, double& xh, const int pl, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return eccmie::eccMie(xi, xh, pl, mi, mh, dx, alpha, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  int eccMie(double& xi, double& xh, const int pl, complex<double>& mi, complex<double>& mh, double& xd, double& alpha, const unsigned int nTheta, vector<double>& Theta, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2) {
+    return eccmie::eccMie(xi, xh, pl, mi, mh, xd, alpha, nTheta, Theta, -1, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
@@ -202,7 +207,8 @@ namespace eccmie {
   //   xh: Size parameter of the host sphere                                          //
   //   mi: Relative refractive index of the inclusion sphere                          //
   //   mh: Relative refractive index of the host sphere                               //
-  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   xd: Size parameter of the shift of the inclusion with respect to the center    //
+  //       of the host                                                                //
   //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nTheta: Number of scattering angles                                            //
   //   Theta: Array containing all the scattering angles where the scattering         //
@@ -224,8 +230,8 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccMie(double& xi, double& xh, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const unsigned int nTheta, std::vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, std::vector<std::complex<double> >& S1, std::vector<std::complex<double> >& S2) {
-    return eccmie::eccMie(xi, xh, -1, mi, mh, dx, alpha, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
+  int eccMie(double& xi, double& xh, complex<double>& mi, complex<double>& mh, double& xd, double& alpha, const unsigned int nTheta, vector<double>& Theta, const int nmax, double *Qext, double *Qsca, double *Qabs, double *Qbk, double *Qpr, double *g, double *Albedo, vector<complex<double> >& S1, vector<complex<double> >& S2) {
+    return eccmie::eccMie(xi, xh, -1, mi, mh, xd, alpha, nTheta, Theta, nmax, Qext, Qsca, Qabs, Qbk, Qpr, g, Albedo, S1, S2);
   }
 
 
@@ -239,7 +245,8 @@ namespace eccmie {
   //   pl: Index of PEC layer (None: -1; Inclusion: 0; Host: 1)                       //
   //   mi: Relative refractive index of the inclusion sphere                          //
   //   mh: Relative refractive index of the host sphere                               //
-  //   dx: Shift of the inclusion with respect to the center of the host              //
+  //   xd: Size parameter of the shift of the inclusion with respect to the center    //
+  //       of the host                                                                //
   //   alpha: Angle of incidence of the light with respect to the Z axis              //
   //   nmax: Maximum number of multipolar expansion terms to be used for the          //
   //         calculations. Only use it if you know what you are doing, otherwise      //
@@ -254,23 +261,23 @@ namespace eccmie {
   // Return value:                                                                    //
   //   Number of multipolar expansion terms used for the calculations                 //
   //**********************************************************************************//
-  int eccField(double& xi, double& xh, const int pl, std::complex<double>& mi, std::complex<double>& mh, double& dx, double& alpha, const int nmax, const unsigned int ncoord, const std::vector<double>& Xp_vec, const std::vector<double>& Yp_vec, const std::vector<double>& Zp_vec, std::vector<std::vector<std::complex<double> > >& E, std::vector<std::vector<std::complex<double> > >& H) {
+  int eccField(double& xi, double& xh, const int pl, complex<double>& mi, complex<double>& mh, double& xd, double& alpha, const int nmax, const unsigned int ncoord, const vector<double>& Xp_vec, const vector<double>& Yp_vec, const vector<double>& Zp_vec, vector<vector<complex<double> > >& E, vector<vector<complex<double> > >& H) {
     if (Xp_vec.size() != ncoord || Yp_vec.size() != ncoord || Zp_vec.size() != ncoord
         || E.size() != ncoord || H.size() != ncoord)
-      throw std::invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
+      throw invalid_argument("Declared number of coords do not fit Xp, Yp, Zp, E, or H!");
     for (auto f:E)
       if (f.size() != 3)
-        throw std::invalid_argument("Field E is not 3D!");
+        throw invalid_argument("Field E is not 3D!");
     for (auto f:H)
       if (f.size() != 3)
-        throw std::invalid_argument("Field H is not 3D!");
+        throw invalid_argument("Field H is not 3D!");
     try {
       EccentricMie eccentric_mie;
       eccentric_mie.SetIncSize(xi);
       eccentric_mie.SetHostSize(xh);
       eccentric_mie.SetIncIndex(mi);
       eccentric_mie.SetHostIndex(mh);
-      eccentric_mie.SetIncShift(dx);
+      eccentric_mie.SetIncShift(xd);
       eccentric_mie.SetIncAngle(alpha);
 
       //eccentric_mie.SetPECLayer(pl); // TODO add PEC layer to field plotting
@@ -279,10 +286,10 @@ namespace eccmie {
       eccentric_mie.RunFieldCalculation();
       E = eccentric_mie.GetFieldE();
       H = eccentric_mie.GetFieldH();
-    } catch(const std::invalid_argument& ia) {
+    } catch(const invalid_argument& ia) {
       // Will catch if  eccentric_mie fails or other errors.
-      std::cerr << "Invalid argument: " << ia.what() << std::endl;
-      throw std::invalid_argument(ia);
+      cerr << "Invalid argument: " << ia.what() << endl;
+      throw invalid_argument(ia);
       return - 1;
     }
     return 0;
@@ -294,7 +301,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetQext() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return Qext_;
   }
 
@@ -304,7 +311,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetQabs() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return Qabs_;
   }
 
@@ -314,7 +321,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetQsca() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return Qsca_;
   }
 
@@ -324,7 +331,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetQbk() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return Qbk_;
   }
 
@@ -334,7 +341,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetQpr() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return Qpr_;
   }
 
@@ -344,7 +351,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetAsymmetryFactor() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return asymmetry_factor_;
   }
 
@@ -354,7 +361,7 @@ namespace eccmie {
   // ********************************************************************** //
   double EccentricMie::GetAlbedo() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return albedo_;
   }
 
@@ -362,9 +369,9 @@ namespace eccmie {
   // ********************************************************************** //
   // Returns previously calculated S1                                       //
   // ********************************************************************** //
-  std::vector<std::complex<double> > EccentricMie::GetS1() {
+  vector<complex<double> > EccentricMie::GetS1() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return S1_;
   }
 
@@ -372,9 +379,9 @@ namespace eccmie {
   // ********************************************************************** //
   // Returns previously calculated S2                                       //
   // ********************************************************************** //
-  std::vector<std::complex<double> > EccentricMie::GetS2() {
+  vector<complex<double> > EccentricMie::GetS2() {
     if (!isMieCalculated_)
-      throw std::invalid_argument("You should run calculations before result request!");
+      throw invalid_argument("You should run calculations before result request!");
     return S2_;
   }
 
@@ -382,7 +389,7 @@ namespace eccmie {
   // ********************************************************************** //
   // Modify scattering (theta) angles                                       //
   // ********************************************************************** //
-  void EccentricMie::SetAngles(const std::vector<double>& angles) {
+  void EccentricMie::SetAngles(const vector<double>& angles) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
@@ -437,7 +444,7 @@ namespace eccmie {
   // ********************************************************************** //
   // Modify refractive index of inclusion                                   //
   // ********************************************************************** //
-  void EccentricMie::SetIncIndex(const std::complex<double> inc_index) {
+  void EccentricMie::SetIncIndex(const complex<double> inc_index) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
@@ -448,7 +455,7 @@ namespace eccmie {
   // ********************************************************************** //
   // Modify refractive index of host                                        //
   // ********************************************************************** //
-  void EccentricMie::SetHostIndex(const std::complex<double> host_index) {
+  void EccentricMie::SetHostIndex(const complex<double> host_index) {
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
@@ -459,11 +466,11 @@ namespace eccmie {
   // ********************************************************************** //
   // Modify coordinates for field calculation                               //
   // ********************************************************************** //
-  void EccentricMie::SetFieldCoords(const std::vector< std::vector<double> >& coords) {
+  void EccentricMie::SetFieldCoords(const vector< vector<double> >& coords) {
     if (coords.size() != 3)
-      throw std::invalid_argument("Error! Wrong dimension of field monitor points!");
+      throw invalid_argument("Error! Wrong dimension of field monitor points!");
     if (coords[0].size() != coords[1].size() || coords[0].size() != coords[2].size())
-      throw std::invalid_argument("Error! Missing coordinates for field monitor points!");
+      throw invalid_argument("Error! Missing coordinates for field monitor points!");
     coords_ = coords;
   }
 
@@ -476,7 +483,7 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
     if (layer_position < -1 || layer_position > 1)
-      throw std::invalid_argument("Error! Valid values for PEC layers are -1, 0 and 1!");
+      throw invalid_argument("Error! Valid values for PEC layers are -1, 0 and 1!");
     PEC_layer_position_ = layer_position;
   }
 
@@ -507,7 +514,7 @@ namespace eccmie {
   // Clear layer information                                                //
   // ********************************************************************** //
   void EccentricMie::ClearLayers() {
-    std::complex<double> c_z(0.0, 0.0);
+    complex<double> c_z(0.0, 0.0);
 
     isExpCoeffsCalc_ = false;
     isScaCoeffsCalc_ = false;
@@ -547,23 +554,23 @@ namespace eccmie {
   // ********************************************************************** //
   // Maximum number of terms required for the calculation                   //
   // ********************************************************************** //
-  void EccentricMie::calcNmax(unsigned int first_layer) {
+  void EccentricMie::calcNmax() {
     int ri, riM1;
-    const std::vector<double>& x = {size_param_inc_, size_param_host_};
-    const std::vector<std::complex<double> >& m = {refractive_index_inc_, refractive_index_host_};
+    const vector<double>& x = {size_param_inc_, size_param_host_};
+    const vector<complex<double> >& m = {refractive_index_inc_, refractive_index_host_};
     calcNstop();  // Set initial nmax_ value
-    for (unsigned int i = first_layer; i < x.size(); i++) {
+    for (unsigned int i = 0; i < 2; i++) {
       if (static_cast<int>(i) > PEC_layer_position_)  // static_cast used to avoid warning
-        ri = round(std::abs(x[i]*m[i]));
+        ri = round(abs(x[i]*m[i]));
       else
         ri = 0;
-      nmax_ = std::max(nmax_, ri);
+      nmax_ = max(nmax_, ri);
       // first layer is pec, if pec is present
       if ((i > first_layer) && (static_cast<int>(i - 1) > PEC_layer_position_))
-        riM1 = round(std::abs(x[i - 1]* m[i]));
+        riM1 = round(abs(x[i - 1]* m[i]));
       else
         riM1 = 0;
-      nmax_ = std::max(nmax_, riM1);
+      nmax_ = max(nmax_, riM1);
     }
     nmax_ += 15;  // Final nmax_ value
   }
@@ -572,12 +579,12 @@ namespace eccmie {
   // ********************************************************************** //
   // Calculate an - equation (5)                                            //
   // ********************************************************************** //
-  std::complex<double> EccentricMie::calc_an(int n, double XL, std::complex<double> Ha, std::complex<double> mL,
-                                              std::complex<double> PsiXL, std::complex<double> ZetaXL,
-                                              std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
+  complex<double> EccentricMie::calc_an(int n, double XL, complex<double> Ha, complex<double> mL,
+                                              complex<double> PsiXL, complex<double> ZetaXL,
+                                              complex<double> PsiXLM1, complex<double> ZetaXLM1) {
 
-    std::complex<double> Num = (Ha/mL + n/XL)*PsiXL - PsiXLM1;
-    std::complex<double> Denom = (Ha/mL + n/XL)*ZetaXL - ZetaXLM1;
+    complex<double> Num = (Ha/mL + n/XL)*PsiXL - PsiXLM1;
+    complex<double> Denom = (Ha/mL + n/XL)*ZetaXL - ZetaXLM1;
 
     return Num/Denom;
   }
@@ -586,12 +593,12 @@ namespace eccmie {
   // ********************************************************************** //
   // Calculate bn - equation (6)                                            //
   // ********************************************************************** //
-  std::complex<double> EccentricMie::calc_bn(int n, double XL, std::complex<double> Hb, std::complex<double> mL,
-                                              std::complex<double> PsiXL, std::complex<double> ZetaXL,
-                                              std::complex<double> PsiXLM1, std::complex<double> ZetaXLM1) {
+  complex<double> EccentricMie::calc_bn(int n, double XL, complex<double> Hb, complex<double> mL,
+                                              complex<double> PsiXL, complex<double> ZetaXL,
+                                              complex<double> PsiXLM1, complex<double> ZetaXLM1) {
 
-    std::complex<double> Num = (mL*Hb + n/XL)*PsiXL - PsiXLM1;
-    std::complex<double> Denom = (mL*Hb + n/XL)*ZetaXL - ZetaXLM1;
+    complex<double> Num = (mL*Hb + n/XL)*PsiXL - PsiXLM1;
+    complex<double> Denom = (mL*Hb + n/XL)*ZetaXL - ZetaXLM1;
 
     return Num/Denom;
   }
@@ -599,7 +606,7 @@ namespace eccmie {
   // ********************************************************************** //
   // Calculates S1 - equation (25a)                                         //
   // ********************************************************************** //
-  std::complex<double> EccentricMie::calc_S1(int n, std::complex<double> an, std::complex<double> bn,
+  complex<double> EccentricMie::calc_S1(int n, complex<double> an, complex<double> bn,
                                               double Pi, double Tau) {
     return double(n + n + 1)*(Pi*an + Tau*bn)/double(n*n + n);
   }
@@ -609,7 +616,7 @@ namespace eccmie {
   // Calculates S2 - equation (25b) (it's the same as (25a), just switches  //
   // Pi and Tau)                                                            //
   // ********************************************************************** //
-  std::complex<double> EccentricMie::calc_S2(int n, std::complex<double> an, std::complex<double> bn,
+  complex<double> EccentricMie::calc_S2(int n, complex<double> an, complex<double> bn,
                                               double Pi, double Tau) {
     return calc_S1(n, an, bn, Tau, Pi);
   }
@@ -627,29 +634,29 @@ namespace eccmie {
   // Output parameters:                                                               //
   //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
   //**********************************************************************************//
-  void EccentricMie::calcD1D3(const std::complex<double> z,
-                               std::vector<std::complex<double> >& D1,
-                               std::vector<std::complex<double> >& D3) {
+  void EccentricMie::calcD1D3(const complex<double> z,
+                               vector<complex<double> >& D1,
+                               vector<complex<double> >& D3) {
 
     // Downward recurrence for D1 - equations (16a) and (16b)
-    D1[nmax_] = std::complex<double>(0.0, 0.0);
-    const std::complex<double> zinv = std::complex<double>(1.0, 0.0)/z;
+    D1[nmax_] = complex<double>(0.0, 0.0);
+    const complex<double> zinv = complex<double>(1.0, 0.0)/z;
 
     for (int n = nmax_; n > 0; n--) {
       D1[n - 1] = static_cast<double>(n)*zinv - 1.0/(D1[n] + static_cast<double>(n)*zinv);
     }
 
-    if (std::abs(D1[0]) > 100000.0)
-      throw std::invalid_argument("Unstable D1! Please, try to change input parameters!\n");
+    if (abs(D1[0]) > 100000.0)
+      throw invalid_argument("Unstable D1! Please, try to change input parameters!\n");
 
     // Upward recurrence for PsiZeta and D3 - equations (18a) - (18d)
-    PsiZeta_[0] = 0.5*(1.0 - std::complex<double>(std::cos(2.0*z.real()), std::sin(2.0*z.real()))
-                     *std::exp(-2.0*z.imag()));
-    D3[0] = std::complex<double>(0.0, 1.0);
+    PsiZeta_[0] = 0.5*(1.0 - complex<double>(cos(2.0*z.real()), sin(2.0*z.real()))
+                     *exp(-2.0*z.imag()));
+    D3[0] = complex<double>(0.0, 1.0);
     for (int n = 1; n <= nmax_; n++) {
       PsiZeta_[n] = PsiZeta_[n - 1]*(static_cast<double>(n)*zinv - D1[n - 1])
                                    *(static_cast<double>(n)*zinv - D3[n - 1]);
-      D3[n] = D1[n] + std::complex<double>(0.0, 1.0)/PsiZeta_[n];
+      D3[n] = D1[n] + complex<double>(0.0, 1.0)/PsiZeta_[n];
     }
   }
 
@@ -666,19 +673,19 @@ namespace eccmie {
   // Output parameters:                                                               //
   //   Psi, Zeta: Riccati-Bessel functions                                            //
   //**********************************************************************************//
-  void EccentricMie::calcPsiZeta(std::complex<double> z,
-                                  std::vector<std::complex<double> >& Psi,
-                                  std::vector<std::complex<double> >& Zeta) {
+  void EccentricMie::calcPsiZeta(complex<double> z,
+                                  vector<complex<double> >& Psi,
+                                  vector<complex<double> >& Zeta) {
 
-    std::complex<double> c_i(0.0, 1.0);
-    std::vector<std::complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
+    complex<double> c_i(0.0, 1.0);
+    vector<complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
 
     // First, calculate the logarithmic derivatives
     calcD1D3(z, D1, D3);
 
     // Now, use the upward recurrence to calculate Psi and Zeta - equations (20a) - (21b)
-    Psi[0] = std::sin(z);
-    Zeta[0] = std::sin(z) - c_i*std::cos(z);
+    Psi[0] = sin(z);
+    Zeta[0] = sin(z) - c_i*cos(z);
     for (int n = 1; n <= nmax_; n++) {
       Psi[n]  =  Psi[n - 1]*(static_cast<double>(n)/z - D1[n - 1]);
       Zeta[n] = Zeta[n - 1]*(static_cast<double>(n)/z - D3[n - 1]);
@@ -701,9 +708,9 @@ namespace eccmie {
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
   void EccentricMie::calcPiTau(const double& costheta,
-                                std::vector<std::vector<double> >& Pi, std::vector<std::vector<double> >& Tau) {
+                                vector<vector<double> >& Pi, vector<vector<double> >& Tau) {
 
-    double sintheta = std::sqrt(1.0 - costheta*costheta);
+    double sintheta = sqrt(1.0 - costheta*costheta);
 
     Pi[0][0] = 1.0/sintheta;
     Pi[0][1] = costheta/sintheta;
@@ -755,17 +762,15 @@ namespace eccmie {
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
   void EccentricMie::calcSpherHarm(const double Rho, const double Theta, const double Phi,
-                                    const std::complex<double>& zn, const std::complex<double>& dzn,
+                                    const complex<double>& zn, const complex<double>& dzn,
                                     const double& Pi, const double& Tau, const double& n,
-                                    std::vector<std::complex<double> >& Mo1n, std::vector<std::complex<double> >& Me1n,
-                                    std::vector<std::complex<double> >& No1n, std::vector<std::complex<double> >& Ne1n) {
+                                    vector<complex<double> >& Mo1n, vector<complex<double> >& Me1n,
+                                    vector<complex<double> >& No1n, vector<complex<double> >& Ne1n) {
 
     // using eq 4.50 in BH
-    std::complex<double> c_zero(0.0, 0.0);
-    std::complex<double> deriv = Rho*dzn + zn;
+    complex<double> c_zero(0.0, 0.0);
+    complex<double> deriv = Rho*dzn + zn;
 
-    using std::sin;
-    using std::cos;
     Mo1n[0] = c_zero;
     Mo1n[1] = cos(Phi)*Pi*zn;
     Mo1n[2] = -sin(Phi)*Tau*zn;
@@ -809,66 +814,66 @@ namespace eccmie {
   }  // end of EccentricMie::ScattCoeffs(...)
 
 
-  std::complex<double> EccentricMie::Ecuation25(int n, int np, std::complex<double> c_n_npminus1,
-                                                std::complex<double> c_nminus1_np, std::complex<double> c_n_npplus1) {
+  complex<double> EccentricMie::calcTransCn(int n, int np, complex<double> Cnnpm1,
+                                            complex<double> Cnm1np, complex<double> Cnnpp1) {
 
-    std::complex<double> term1, term2, term3, factor;
+    complex<double> term1, term2, term3, factor;
 
-    factor = std::sqrt(double(n + n + 3)/double(np + np + 1))/double(n + 1);
-    term1  = double(np)*c_n_npminus1*std::sqrt(double(n + n + 1)/double(np + np - 1));
-    term2  = double(n)*c_nminus1_np*std::sqrt(double(np + np + 1)/double(n + n - 1));
-    term3  = -double(np + 1)*c_n_npplus1*std::sqrt(double(n + n + 1)/double(np + np + 3));
+    factor = sqrt(double(n + n + 3)/double(np + np + 1))/double(n + 1);
+    term1  = double(np)*Cnnpm1*sqrt(double(n + n + 1)/double(np + np - 1));
+    term2  = double(n)*Cnm1np*sqrt(double(np + np + 1)/double(n + n - 1));
+    term3  = -double(np + 1)*Cnnpp1*sqrt(double(n + n + 1)/double(np + np + 3));
 
     return factor*(term1 + term2 + term3);
   }
 
-  std::complex<double> EccentricMie::Equation26(int m, int n, int np,
-                                                std::complex<double> xd, std::complex<double> c_n_np,
-                                                std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1) {
+  complex<double> EccentricMie::calcTransCm(int m, int n, int np,
+                                            complex<double> zd, complex<double> Cnnp,
+                                            complex<double> Cnnpp1, complex<double> Cnnpm1) {
 
-    std::complex<double> term1, term2, term3, factor;
+    complex<double> term1, term2, term3, factor;
 
-    factor = 1/std::sqrt((n-m+1)*(n+m)*(np+np+1));
-    term1  = c_n_np*std::sqrt((np-m+1)*(np+m)*(np+np+1));
-    term2  = -xd*c_n_npplus1*std::sqrt((np-m+2)*(np-m+1)/(np+np+3));
-    term3  = -xd*c_n_npminus1*std::sqrt((np+m)*(np+m-1)/(np+np-1));
+    factor = 1/sqrt((n-m+1)*(n+m)*(np+np+1));
+    term1  = Cnnp*sqrt((np-m+1)*(np+m)*(np+np+1));
+    term2  = -zd*Cnnpp1*sqrt((np-m+2)*(np-m+1)/(np+np+3));
+    term3  = -zd*Cnnpm1*sqrt((np+m)*(np+m-1)/(np+np-1));
 
     return factor * (term1 + term2 + term3);
   }
 
-  std::complex<double> EccentricMie::Equation21(int m, int np,
-                                                std::complex<double> xd, std::complex<double> c_n_np,
-                                                std::complex<double> c_n_npplus1, std::complex<double> c_n_npminus1) {
+  complex<double> EccentricMie::calcTransA(int m, int np,
+                                           complex<double> zd, complex<double> Cnnp,
+                                           complex<double> Cnnpp1, complex<double> Cnnpm1) {
 
-    std::complex<double> term1, term2;
+    complex<double> term1, term2;
 
-    term1  = -xd*c_n_npplus1*std::sqrt((np - m + 1)*(np + m + 1)/double((np + np + 1)*(np + np + 3)))/double(np + 1);
-    term2  = -xd*c_n_npminus1*std::sqrt(double((np - m)*(np + m))/double((np + np + 1)*(np + np - 1)))/double(np);
+    term1  = -zd*Cnnpp1*sqrt((np - m + 1)*(np + m + 1)/double((np + np + 1)*(np + np + 3)))/double(np + 1);
+    term2  = -zd*Cnnpm1*sqrt(double((np - m)*(np + m))/double((np + np + 1)*(np + np - 1)))/double(np);
 
-    return  c_n_np + term1 + term2;
+    return  Cnnp + term1 + term2;
   }
 
-  std::complex<double> EccentricMie::Equation22(int m, int np,
-                                                std::complex<double> xd, std::complex<double> c_n_np) {
+  complex<double> EccentricMie::calcTransB(int m, int np,
+                                           complex<double> zd, complex<double> Cnnp) {
 
-    std::complex<double> c_i(0.0, 1.0);
-    return  -c_i*double(m)*xd*c_n_np/double(np*(np + 1));
+    complex<double> c_i(0.0, 1.0);
+    return  -c_i*double(m)*zd*Cnnp/double(np*(np + 1));
   }
 
-  std::complex<double> EccentricMie::Ec40_43(std::complex<double> k, std::complex<double> k1,
-                                             std::complex<double> Q, std::complex<double> Trans,
-                                             std::complex<double> Psi_1, std::complex<double> D1_1,
-                                             std::complex<double> D3_0,
-                                             std::complex<double> Zeta1_1, std::complex<double> D3_1) {
+  complex<double> EccentricMie::calcTU(complex<double> m1, complex<double> m2,
+                                       complex<double> Q, complex<double> Trans,
+                                       complex<double> Psi_z2, complex<double> D1_z2,
+                                       complex<double> D3_x2,
+                                       complex<double> Zeta1_z2, complex<double> D3_z2) {
 
-    return Trans*(k*D3_0*(2.0*Psi_1 + Zeta1_1*Q) - k1*(2.0*Psi_1*D1_1 + Zeta1_1*D3_1*Q)) ;
+    return Trans*(m1*D3_x2*(2.0*Psi_z2 + Zeta1_z2*Q) - m2*(2.0*Psi_z2*D1_z2 + Zeta1_z2*D3_z2*Q)) ;
   }
 
-  std::complex<double> EccentricMie::CalQ(std::complex<double> k1, std::complex<double> k2,
-                                          std::complex<double> Psi, std::complex<double> D1,
-                                          std::complex<double> Zeta1, std::complex<double> D3) {
+  complex<double> EccentricMie::calcQ(complex<double> m1, complex<double> m2,
+                                      complex<double> Psi, complex<double> D1,
+                                      complex<double> Zeta1, complex<double> D3) {
 
-    return  2.0*Psi*D1*(k1/Zeta1 - k2)/(k2*D1 - k1*D3);
+    return  2.0*Psi*D1*(m1/Zeta1 - m2)/(m2*D1 - m1*D3);
   }
 
 
@@ -906,242 +911,194 @@ namespace eccmie {
     isScaCoeffsCalc_ = false;
     isMieCalculated_ = false;
 
+    complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+    complex<double> m1, m2, z1, z2, z3, zd;
+    double x2;
 
-// =============================================================================
+    m1 = refractive_index_inc_;
+    m2 = refractive_index_host_;
+    x2 = size_param_host_;
+    z1 = m1*size_param_inc_;
+    z2 = m2*size_param_host_;
+    z3 = m2*size_param_inc_;
+    zd = m2*shift_inc_;
 
+    // Estimate maximum number of iterations
+    calcNmax();
 
-    std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    std::complex<double> k0, k1, k2, x0, x1, x2, x3, xd;
-    double wavel;
+    vector<complex<double> > Psi_x2(nmax_ + 1, c_zero), D1_x2(nmax_ + 1, c_zero);
+    vector<complex<double> > Zeta1_x2(nmax_ + 1, c_zero), D3_x2(nmax_ + 1, c_zero);
 
-    k0 = std::complex<double>(2*PI_/wavel, 0.0);
-    k1 = k0*refractive_index_host_;
-    k2 = k0*refractive_index_inc_;
-    x0 = k0*size_param_host_;
-    x1 = k1*size_param_host_;
-    x2 = k1*size_param_inc_;
-    x3 = k2*size_param_inc_;
-    xd = k1*shift_inc_;
+    vector<complex<double> > Psi_z2(nmax_ + 1, c_zero), D1_z2(nmax_ + 1, c_zero);
+    vector<complex<double> > Zeta1_z2(nmax_ + 1, c_zero), D3_z2(nmax_ + 1, c_zero);
 
-    // # of iterations for the big sphere
-    //nbg = round(std::abs(x0) + 4.0*std::pow(std::abs(x0), 1.0/3.0) + 2.0);
-    nmax_ = GetMaxTerms();
-
-//  .......................................................................
-//  .     Calculate Bessel Functions for the first boundary at rad1       .
-//  .     We have bessel as an incident field of the sphere, and a        .
-//  .     hankel as the scattered field.                                  .
-//  .     Their arguments are x0.r and x0, respectively.                  .
-//  .     Then we have hankel1 and hankel2 inside the sphere; and         .
-//  .     their argument is k1*rad1=x1.                                   .
-//  .......................................................................
-
-
-//  .......................................................................
-//  .     Now we match boundary at rad2.  Here we have two hankels in     .
-//  .     the host sphere, and their argument is k1*rad2=x2               .
-//  .     Then we have a bessel inside the inclusion with its argument    .
-//  .     being x3.                                                       .
-//  .......................................................................
-
-    // # of iterations for the small sphere
-    //nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
-    //nsm = GetMaxTermsSmall();
-
-
-//  .......................................................................
-//  .    Calculate Riccati-Bessel Functions and Derivatives needed        .
-//  .     Note that Zeta1_0  means Zeta at k0a1=x0
-//  .     and       Zeta1_1 means the 1st Zeta at k1a1=x1                 .
-//  .     and       Zeta2_1 means the 2nd Zeta at k1a1=x1                 .
-//  .     and       Zeta1_2 means the 1st Zeta at k1a2=x2                 .
-//  .     and       Zeta2_2 means the 2nd Zeta at k1a2=x2                 .
-//  .     and       Zeta2_2 means the 2nd Zeta at k1a2=x2                 .
-//  .......................................................................
-
-    std::vector<std::complex<double> > Psi_0(nmax_ + 1, c_zero), D1_0(nmax_ + 1, c_zero);
-    std::vector<std::complex<double> > Zeta1_0(nmax_ + 1, c_zero), D3_0(nmax_ + 1, c_zero);
-
-    std::vector<std::complex<double> > Psi_1(nmax_ + 1, c_zero), D1_1(nmax_ + 1, c_zero);
-    std::vector<std::complex<double> > Zeta1_1(nmax_ + 1, c_zero), D3_1(nmax_ + 1, c_zero);
-
-    std::vector<std::complex<double> > Psi_2(nmax_ + 1, c_zero), D1_2(nmax_ + 1, c_zero);
-    std::vector<std::complex<double> > Zeta1_2(nmax_ + 1, c_zero), D3_2(nmax_ + 1, c_zero);
+    vector<complex<double> > Psi_z3(nmax_ + 1, c_zero), D1_z3(nmax_ + 1, c_zero);
+    vector<complex<double> > Zeta1_z3(nmax_ + 1, c_zero), D3_z3(nmax_ + 1, c_zero);
     
-    std::vector<std::complex<double> > aa(nmax_ + 1, c_zero), ba(nmax_ + 1, c_zero);
-
-    // For z=x0
-    // First, calculate the logarithmic derivatives
-    calcD1D3(x0, D1_0, D3_0);
-    // Now, calculate Riccati-Bessel funxtions
-    calcPsiZeta(x0, Psi_0, Zeta1_0);
-
-    // For z=x1
-    // First, calculate the logarithmic derivatives
-    calcD1D3(x1, D1_1, D3_1);
-    // Now, calculate Riccati-Bessel funxtions
-    calcPsiZeta(x1, Psi_1, Zeta1_1);
+    vector<complex<double> > cnm(nmax_ + 1, c_zero), dnm(nmax_ + 1, c_zero);
 
     // For z=x2
     // First, calculate the logarithmic derivatives
-    calcD1D3(x2, D1_2, D3_2);
-    // Now, calculate Riccati-Bessel funxtions
-    calcPsiZeta(x2, Psi_2, Zeta1_2);
+    calcD1D3(x2, D1_x2, D3_x2);
+    // Now, calculate Riccati-Bessel functions
+    calcPsiZeta(x2, Psi_x2, Zeta1_x2);
+
+    // For z=z2
+    // First, calculate the logarithmic derivatives
+    calcD1D3(z2, D1_z2, D3_z2);
+    // Now, calculate Riccati-Bessel functions
+    calcPsiZeta(z2, Psi_z2, Zeta1_z2);
+
+    // For z=z3
+    // First, calculate the logarithmic derivatives
+    calcD1D3(z3, D1_z3, D3_z3);
+    // Now, calculate Riccati-Bessel functions
+    calcPsiZeta(z3, Psi_z3, Zeta1_z3);
 
 //  .......................................................................
 //  .     Now we must solve for the Quality factors by using equations    .
-//  .     17 and 18.                                                      .
-//  .     Note that if the index of refraction of the inclusion is nega-  .
-//  .     tive, then we'll take that to mean it is a perfect conductor,   .
-//  .     and the simplification is in the "else" part of the if-else     .
-//  .     statement.                                                      .
+//  .     7.1 and 7.2.                                                      .
 //  .......................................................................
 
-    std::vector<std::complex<double> > Q_r(nmax_ + 1, c_zero), Q_s(nmax_ + 1, c_zero);
+    vector<complex<double> > Qr(nmax_ + 1, c_zero), Qs(nmax_ + 1, c_zero);
     int n;
 
     if (PEC_layer_position_ < 0)
       for (n = 0; n < nmax_; n++) {
-        Q_r[n] = CalQ(k1, k2, Psi_2[n], D1_2[n], Zeta1_2[n], D3_2[n]); //ec. 17
-        Q_s[n] = CalQ(k2, k1, Psi_2[n], D1_2[n], Zeta1_2[n], D3_2[n]); //ec. 18
+        Qr[n] = calcQ(m1, m2, Psi_z3[n], D1_z3[n], Zeta1_z3[n], D3_z3[n]); //eq. 7.1
+        Qs[n] = calcQ(m2, m1, Psi_z3[n], D1_z3[n], Zeta1_z3[n], D3_z3[n]); //eq. 7.2
       }
     else // The inclusion is a perfect conductor
       for (n = 0; n < nmax_; n++) {
-        Q_r[n] = -2.0*Psi_2[n]/Zeta1_2[n];
-        Q_s[n] = -2.0*Psi_2[n]*D1_2[n]/Zeta1_2[n]/D3_2[n];
+        Qr[n] = -2.0*Psi_z3[n]/Zeta1_z3[n];
+        Qs[n] = -2.0*Psi_z3[n]*D1_z3[n]/Zeta1_z3[n]/D3_z3[n];
       }
 
 
 //  ........................................................................
 //  .    Calculate translation coefficients when the separation of the     .
 //  .    center to center radii is d.  We will first find the bessel       .
-//  .    function which describes the separation, k1d=xd, used in 23 and 24.
+//  .    function which describes the separation, m2xd=zd, used in 10.1 and 10.2.
 //  ........................................................................
 
-    // # of iterations for d
-    //if (xd == 0.0) nxd = 2; else
-    //   nxd = round(std::abs(xd) + 4.0*std::pow(std::abs(xd), 1.0/3.0) + 2.0);
-    //nxd = GetMaxTermsSeparation();
 
-    std::vector<std::complex<double> > Psi_d(nmax_ + 1, c_zero), D1_d(nmax_ + 1, c_zero);
-    std::vector<std::complex<double> > Zeta1_d(nmax_ + 1, c_zero), D3_d(nmax_ + 1, c_zero);
+    vector<complex<double> > Psi_d(nmax_ + 1, c_zero), D1_d(nmax_ + 1, c_zero);
+    vector<complex<double> > Zeta1_d(nmax_ + 1, c_zero), D3_d(nmax_ + 1, c_zero);
 
-    // For z=xd
+    // For z=zd
     // First, calculate the logarithmic derivatives
-    calcD1D3(xd, D1_d, D3_d);
-    // Now, calculate Riccati-Bessel funxtions
-    calcPsiZeta(xd, Psi_d, Zeta1_d);
+    calcD1D3(zd, D1_d, D3_d);
+    // Now, calculate Riccati-Bessel functions
+    calcPsiZeta(zd, Psi_d, Zeta1_d);
 
 //  ...............................................
-//  .    using 23 and 24 first.                   .
-//  .    cuplo = c0,0(np) and                     .
-//  .    cuplo1 = c-1,0(np) are the starters      .
+//  .    using 10.1 and 10.2 first.                   .
+//  .    C00 = c0,0(np) and                     .
+//  .    C0m1 = c-1,0(np) are the starters      .
 //  ...............................................
 
-    std::vector<std::complex<double> > cuplo(nmax_), cuplo1(nmax_);
-    std::vector<std::vector<std::complex<double> > > cuplom(nmax_), cuplom1(nmax_), TransAm(nmax_), TransBm(nmax_);
+    vector<complex<double> > C00(nmax_), C0m1(nmax_);
+    vector<vector<complex<double> > > Cmn(nmax_), Cmm1n(nmax_), TransAm(nmax_), TransBm(nmax_);
 
     int np;
     for (n = 0; n < nmax_; n++) {
-      cuplom[n].resize(2*nmax_ + 1 - n);
-      cuplom1[n].resize(2*nmax_ + 1 - n);
+      Cmn[n].resize(2*nmax_ + 1 - n);
+      Cmm1n[n].resize(2*nmax_ + 1 - n);
 
       TransAm[n].resize(nmax_);
       TransBm[n].resize(nmax_);
     }
 
     for (np = 0; np < 2*nmax_ + 1; np++) {
-      cuplo[np] = std::sqrt(np + np + 1.0)*Psi_d[np]/xd ;
-      cuplo1[np] = -cuplo[np];
-      cuplom[0][np] = cuplo[np];
+      C00[np] = sqrt(np + np + 1.0)*Psi_d[np]/zd ;
+      C0m1[np] = -C00[np];
+      Cmn[0][np] = C00[np];
     }
 
 //  .................................................
-//  .     Now use equation 25, this is where we     .
+//  .     Now use equation 10.3, this is where we     .
 //  .     perform the switcharoos and recursively   .
 //  .     solve for the translation coeff. for m=0  .
-//  .     The result is stored into the cuplom      .
+//  .     The result is stored into the Cmn      .
 //  .................................................
 
     for (n = 0; n < nmax_; n++) // [0..nmax_-1]
       for (np = 0; np < 2*nmax_ + 1 - n; np++)
-        cuplom[n + 1][np] = Ecuation25(n, np, cuplom[n][np - 1],cuplom[n - 1][np],cuplom[n][np + 1]);
+        Cmn[n + 1][np] = calcTransCn(n, np, Cmn[n][np - 1], Cmn[n - 1][np], Cmn[n][np + 1]);
 
-    // eso quedo aleman!!!!!
+    // Calculate angular functions Pi and Tau
+    vector<vector<double> > Pi(nmax_), Tau(nmax_);
+    for (int i = 0; i < nmax_; i++) {
+      Pi[i].resize(nmax_);
+      Tau[i].resize(nmax_);
+    }
+
+    calcPiTau (cos(PI_*angle_inc_/180.), Pi, Tau);
 
 //  .......................................................
 //  . Now that we have the elements in the matrix         .
-//  . cuplom(n,np) (for m=0), we can start the            .
+//  . Cmn[0][n][np], we can start the            .
 //  . iterations in m to get the rest of the translation  .
-//  . coeff. Then we'll have the complete set of C(n,m)np .
+//  . coeff. Then we'll have the complete set of Cmn[m][n][np] .
 //  .......................................................
- 
-    int m;
 
-    for (m = 0; m < nmax_; m++) { // main loop for m
+    for (int m = 0; m < nmax_; m++) { // main loop for m
 //  ................................................................
 //  . Now to find the rest of the matrix in C(n,m)np.  For each    .
 //  . value of m that is greater than 0, say 1, we can find the    .
-//  . matrix C(n,1)np and store that into cuplom(n,np); then       .
+//  . matrix C(n,1)np and store that into Cmn(n,np); then       .
 //  . the next iteration of m, i.e. m=2, we can find C(n,2)np      .
-//  . by already having C(n,1)np stored in the matrix cuplom1(n,np).
-//  . Use equation 26                                              .
+//  . by already having C(n,1)np stored in the matrix Cmm1n(n,np).
+//  . Use equation 10.4                                              .
 //  ................................................................
 
       if (m > 0) {
-        //save the last cuplom in cuplom1
+        //save the last Cmn in Cmm1n
         for (n = 0; n < nmax_; n++)
           for (np = 0; np < 2*nmax_ + 1; np++)
-            cuplom1[n][np] = cuplom[n][np];
+            Cmm1n[n][np] = Cmn[n][np];
 
         for (n = m; n < nmax_; n++)
           for (np = m; np < 2 * nmax_ - m; np++)
-            cuplom[n][np] = Equation26(m, n, np, xd, cuplom1[n][np], cuplom1[n][np + 1], cuplom1[n][np - 1]);
+            Cmn[n][np] = calcTransCm(m, n, np, zd, Cmm1n[n][np], Cmm1n[n][np + 1], Cmm1n[n][np - 1]);
 
       } // if m>0
 
 //    ..................................................
-//    . Cuplom(n,np) now has the most recent values    .
+//    . Cmn[n][np] now has the most recent values    .
 //    . for the most recent value of m.                .
 //    ..................................................
 
 //    ............................................................
 //    . Now that we have the matrix which contains the C(n,m)np  .
 //    . we can go ahead and find the translation coefficients    .
-//    . A(n,m)np and B(n,m)np by using eqns 21 & 22. Note,       .
+//    . A(n,m)np and B(n,m)np by using eqns 9.1 & 9.2. Note,       .
 //    . we do need to store TransAm and TransBm into a matrix    .
 //    . like we did for the C(n,m)np for later manipulation      .
 //    ............................................................
 
       for (n = m; n < nmax_; n++)
         for (np = m; np < nmax_; np++) {
-          TransAm[n][np] = Equation21(m, np, xd, cuplom[n][np], cuplom[n][np + 1], cuplom[n][np - 1]);
-          TransBm[n][np] = Equation22(m, np, xd, cuplom[n][np]);
+          TransAm[n][np] = calcTransA(m, np, zd, Cmn[n][np], Cmn[n][np + 1], Cmn[n][np - 1]);
+          TransBm[n][np] = calcTransB(m, np, zd, Cmn[n][np]);
         }
 
 //    ...............................................................
 //    .     Now we will calculate the incident field coefficients   .
-//    .     for the TE case and store them in aa(i) and ba(i)       .
+//    .     for the TE case and store them in cnm(i) and dnm(i)       .
 //    ...............................................................
 
-      double cos_alpha;
-      std::complex<double> factor;
-      std::vector<std::vector<double> > Pi(nmax_), Tau(nmax_);
-
-      cos_alpha = std::cos(PI_*angle_inc_/180.);
-
-      calcPiTau (cos_alpha, Pi, Tau);
+      complex<double> factor;
       for (n = m; n < nmax_; n++) {
-        factor = 2.0*std::pow(c_i, n + 2)/double(n*n + n);
-        aa[n] = factor*Tau[m][n];
-        ba[n] = factor*double(m)*Pi[m][n];
+        factor = 2.0*pow(c_i, n + 2)/double(n*n + n);
+        cnm[n] = factor*Tau[m][n];
+        dnm[n] = factor*Pi[m][n];
       }
 
-//    Fill the matrix and load de solution vectors (aa & ba) in the last column
+//    Fill the matrix and load de solution vectors (cnm & dnm) in the last column
 
-
-      std::vector<std::vector<std::complex<double> > > matrix;
-      std::complex<double> ganma_n;
+      vector<vector<complex<double> > > matrix;
+      complex<double> gamma_n;
       // matriz [nmax_-m][nmax_-m+1]
       int numel, j;
 
@@ -1153,15 +1110,15 @@ namespace eccmie {
         matrix[i].resize(numel + 1);
         j = 0;
         for (np = m; np < nmax_; np++) {
-          matrix[i][j] = Ec40_43(k0, k1, Q_r[np], TransAm[n][np], Psi_1[n], D1_1[n], D3_0[n], Zeta1_1[n], D3_1[n]); // ec. 40
-          matrix[i][j + numel] = Ec40_43(k0, k1, Q_s[np], TransBm[n][np], Psi_1[n], D1_1[n], D3_0[n], Zeta1_1[n], D3_1[n]); // ec. 42
-          matrix[i + numel][j] = Ec40_43(k1, k0, Q_r[np], TransBm[n][np], Psi_1[n], D1_1[n], D3_0[n], Zeta1_1[n], D3_1[n]); // ec. 41
-          matrix[i + numel][j + numel] = Ec40_43(k1, k0, Q_s[np], TransAm[n][np], Psi_1[n], D1_1[n], D3_0[n], Zeta1_1[n], D3_1[n]); // ec. 43
+          matrix[i][j] = calcTU(1.0, m2, Qr[np], TransAm[n][np], Psi_z2[n], D1_z2[n], D3_x2[n], Zeta1_z2[n], D3_z2[n]); // eq. 16.2
+          matrix[i][j + numel] = calcTU(1.0, m2, Qs[np], TransBm[n][np], Psi_z2[n], D1_z2[n], D3_x2[n], Zeta1_z2[n], D3_z2[n]); // eq. 16.4
+          matrix[i + numel][j] = calcTU(m2, 1.0, Qr[np], TransBm[n][np], Psi_z2[n], D1_z2[n], D3_x2[n], Zeta1_z2[n], D3_z2[n]); // eq. 16.3
+          matrix[i + numel][j + numel] = calcTU(m2, 1.0, Qs[np], TransAm[n][np], Psi_z2[n], D1_z2[n], D3_x2[n], Zeta1_z2[n], D3_z2[n]); // eq. 16.5
           j++;
         } //np
-        ganma_n = k1*Psi_0[n]*(D3_0[n] - D1_0[n]); //Ecuation 39
-        matrix[i][j] = aa[n]*ganma_n;
-        matrix[i + numel][j] = ba[n]*ganma_n;
+        gamma_n = m2*Psi_x2[n]*(D3_x2[n] - D1_x2[n]); //Equation 16.1
+        matrix[i][j] = cnm[n]*gamma_n;
+        matrix[i + numel][j] = dnm[n]*gamma_n;
         i++;
       } //n
 
@@ -1169,64 +1126,60 @@ namespace eccmie {
 //    . THE MATRIX IS FILLED!!  For TE case                          .
 //    ................................................................
 
-
-
-
-
     } // loop m
 
 
 /*    // # of iterations for the small sphere and loops
-    nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
+    nsm = round(abs(z3) + 4.0*pow(abs(z3), 1.0/3.0) + 2.0);
 
 
 
 
 
     // # of iterations for the big sphere and loops
-    nmax_ = round(std::abs(x0) + 4.0*std::pow(std::abs(x0), 1.0/3.0) + 2.0);
+    nmax_ = round(abs(x2) + 4.0*pow(abs(x2), 1.0/3.0) + 2.0);
     // # of iterations for the small sphere and loops
-    nsm = round(std::abs(x2) + 4.0*std::pow(std::abs(x2), 1.0/3.0) + 2.0);
+    nsm = round(abs(z3) + 4.0*pow(abs(z3), 1.0/3.0) + 2.0);
 
     int i, j, jj, jjj, n, m, mn, np, nmax_, nsm, ntot, nel;
     double Qext1, Qsca1, Qabs, gg, f_angle, angle_inc__0, tau, pie, dd;
     double alpha, d_ang, b_angle, angledd, theta;
     // For the refractive indices and k-vectors
-    double x0;
-    std::complex<double> k1, k2, x1, x2, x3, xd;
+    double x2;
+    complex<double> m2, m1, z2, z3, z1, zd;
     // For the MEDIUM, which in our case is just plain old air.
-    std::vector<std::complex<double> > Jb_0(nmax_ + 2), tmp(nmax_ + 2), psi_0(nmax_ + 2), dpsi_0(nmax_ + 2);
-    std::vector<std::complex<double> > Hk_0(nmax_ + 2), ctmp(nmax_ + 2), Zeta_0(nmax_ + 2), dzeta_0(nmax_ + 2);
+    vector<complex<double> > Jb_0(nmax_ + 2), tmp(nmax_ + 2), psi_0(nmax_ + 2), dpsi_0(nmax_ + 2);
+    vector<complex<double> > Hk_0(nmax_ + 2), ctmp(nmax_ + 2), Zeta_0(nmax_ + 2), dzeta_0(nmax_ + 2);
     // For the HOST SPHERE, all the arrays need be at least nmax_
-    std::vector<std::complex<double> > Hk1_1(nmax_ + 2), Zeta1_1(nmax_ + 2), D3_1(nmax_ + 2), Hk2_1(nmax_ + 2), Zeta2_1(nmax_ + 2), D4_1(nmax_ + 2);
+    vector<complex<double> > Hk1_1(nmax_ + 2), Zeta1_z2(nmax_ + 2), D3_z2(nmax_ + 2), Hk2_1(nmax_ + 2), Zeta2_1(nmax_ + 2), D4_1(nmax_ + 2);
     // For the INCLUSION SPHERE
-    std::vector<std::complex<double> > Jb_2(nmax_ + 2), Psi_2(nmax_ + 2), D1_2(nmax_ + 2), Hk1_2(nmax_ + 2), Zeta1_2(nmax_ + 2), D3_2(nmax_ + 2);
-    std::vector<std::complex<double> > Hk2_2(nmax_ + 2), Zeta2_2(nmax_ + 2), D4_2(nmax_ + 2);
+    vector<complex<double> > Jb_2(nmax_ + 2), Psi_z3(nmax_ + 2), D1_z3(nmax_ + 2), Hk1_2(nmax_ + 2), Zeta1_z3(nmax_ + 2), D3_z3(nmax_ + 2);
+    vector<complex<double> > Hk2_2(nmax_ + 2), Zeta2_2(nmax_ + 2), D4_2(nmax_ + 2);
     // For the separation, and Jb_d need be at least 4*nmax_
-    std::vector<std::complex<double> > Jb_d(4*nmax_ + 2);
+    vector<complex<double> > Jb_d(4*nmax_ + 2);
     // For the Internal Coefficients
-    std::vector<std::vector<std::complex<double> > > TintTE(nmax_ + 1), UintTE(nmax_ + 1), TintTM(nmax_ + 1), UintTM(nmax_ + 1);
+    vector<vector<complex<double> > > TintTE(nmax_ + 1), UintTE(nmax_ + 1), TintTM(nmax_ + 1), UintTM(nmax_ + 1);
     // For the SCATTERING
-    std::vector<std::vector<std::complex<double> > > c_TE(nmax_ + 1), d_TE(nmax_ + 1), c_TM(nmax_ + 1), d_TM(nmax_ + 1);
-    std::vector<std::complex<double> > Qr(nmax_ + 1), Qs(nmax_ + 1);
-    std::vector<std::complex<double> > s1_TE(nmax_ + 1), s2_TM(nmax_ + 1), s3_TE(nmax_ + 1), s4_TM(nmax_ + 1);
-    std::complex<double> s1, s2, s3, s4, sum1 , sum2, fact1, fact2, fact3, fact4;
+    vector<vector<complex<double> > > c_TE(nmax_ + 1), d_TE(nmax_ + 1), c_TM(nmax_ + 1), d_TM(nmax_ + 1);
+    vector<complex<double> > Qr(nmax_ + 1), Qs(nmax_ + 1);
+    vector<complex<double> > s1_TE(nmax_ + 1), s2_TM(nmax_ + 1), s3_TE(nmax_ + 1), s4_TM(nmax_ + 1);
+    complex<double> s1, s2, s3, s4, sum1 , sum2, fact1, fact2, fact3, fact4;
     // For the NORMALIZED ASSOCIATED LEGENDRE POLYNOMIALS
-    std::vector<double > legpol, legpol1, legpol2;
+    vector<double > legpol, legpol1, legpol2;
     double angle, x;
     // For the TRANSLATION COEFFICIENTS
-    std::vector<std::complex<double> > c00(4*nmax_ + 2), cm10(4*nmax_ + 2);
-    std::vector<std::vector<std::complex<double> > > c00m(4*nmax_ + 2), cm10m(4*nmax_ + 2);
-    std::complex<double> TransA, TransB;
-    std::vector<std::vector<std::complex<double> > > TransAm, TransBm;
-    std::complex<double> c, cc, ifact;
+    vector<complex<double> > c00(4*nmax_ + 2), cm10(4*nmax_ + 2);
+    vector<vector<complex<double> > > c00m(4*nmax_ + 2), cm10m(4*nmax_ + 2);
+    complex<double> TransA, TransB;
+    vector<vector<complex<double> > > TransAm, TransBm;
+    complex<double> c, cc, ifact;
     // For the MATRICES IN THE LU_DEC0MPOSTION
-    std::vector<int > indx(nmax_ + nmax_ + 2);
-    std::vector<std::complex<double> > b, bd;
-    std::vector<std::vector<std::complex<double> > > matrix, matrixlu;
-    std::vector<std::complex<double> > a_TE(nmax_ + 1), b_TE(nmax_ + 1);
+    vector<int > indx(nmax_ + nmax_ + 2);
+    vector<complex<double> > b, bd;
+    vector<vector<complex<double> > > matrix, matrixlu;
+    vector<complex<double> > a_TE(nmax_ + 1), b_TE(nmax_ + 1);
     // MUELLER MATRIX
-    std::vector<double > mm(4);
+    vector<double > mm(4);
     for (int n = 0; n < 4; n++) {
       mm[n].resize(4);
     }
@@ -1262,17 +1215,17 @@ namespace eccmie {
       Zeta_0[i] = 0.0;
       dzeta_0[i] = 0.0;
       Hk1_1[i] = 0.0;
-      Zeta1_1[i] = 0.0;
-      D3_1[i] = 0.0;
+      Zeta1_z2[i] = 0.0;
+      D3_z2[i] = 0.0;
       Hk2_1[i] = 0.0;
       Zeta2_1[i] = 0.0;
       D4_1[i] = 0.0;
       Jb_2[i] = 0.0;
-      Psi_2[i] = 0.0;
-      D1_2[i] = 0.0;
+      Psi_z3[i] = 0.0;
+      D1_z3[i] = 0.0;
       Hk1_2[i] = 0.0;
-      Zeta1_2[i] = 0.0;
-      D3_2[i] = 0.0;
+      Zeta1_z3[i] = 0.0;
+      D3_z3[i] = 0.0;
       Hk2_2[i] = 0.0;
       Zeta2_2[i] = 0.0;
       D4_2[i] = 0.0;
@@ -1292,7 +1245,7 @@ namespace eccmie {
     // .............
     for (int n = m; n <= nmax_; n++) {
       c = dzeta_0[n]*psi_0[n];
-      c = k1*(c - dpsi_0[n]*Zeta_0[n]);
+      c = m2*(c - dpsi_0[n]*Zeta_0[n]);
       b[n - m] = a_TE[n]*c;
       b[n - m + nel] = b_TE[n]*c;
       bd[n - m] = b[n - m];
@@ -1316,15 +1269,15 @@ namespace eccmie {
       sum1 = 0.0;
       sum2 = 0.0;
       for (int np = m; np <= nmax_; np++) {
-        fact1 = D4_1[n] + Qr[np]*D3_1[n];
+        fact1 = D4_1[n] + Qr[np]*D3_z2[n];
         fact1 = TransAm[np][n]*TintTE[m, np]*fact1;
-        fact2 = D4_1[n] + Qs[np]*D3_1[n];
+        fact2 = D4_1[n] + Qs[np]*D3_z2[n];
         fact2 = TransBm[np][n]*UintTE[m, np]*fact2;
         sum1 = fact1 + fact2 + sum1;
 
-        fact3 = Zeta2_1[n] + Qr[np]*Zeta1_1[n];
+        fact3 = Zeta2_1[n] + Qr[np]*Zeta1_z2[n];
         fact3 = TransBm[np][n]*TintTE[m, np]*fact3;
-        fact4 = Zeta2_1[n] + Qs[np]*Zeta1_1[n];
+        fact4 = Zeta2_1[n] + Qs[np]*Zeta1_z2[n];
         fact4 = TransAm[np][n]*UintTE[m, np]*fact4;
         sum2 = sum2 + fact3 + fact4;
       }
@@ -1336,7 +1289,7 @@ namespace eccmie {
     // .................
     for (int n = m; n <= nmax_; n++) {
       c = dzeta_0[n]*psi_0[n];
-      c  = k1*(c - dpsi_0[n]*Zeta_0[n]);
+      c  = m2*(c - dpsi_0[n]*Zeta_0[n]);
       b[n - m] = _i*b_TE[n]*c;
       b[n - m + nel] = _i*a_TE[n]*c;
       bd[n - m] = b[n - m];
@@ -1357,15 +1310,15 @@ namespace eccmie {
       sum1 = 0.0;
       sum2 = 0.0;
       for (int np = m; np <= nmax_; np++) {
-        fact1 = D4_1[n] + Qr[np]*D3_1[n];
+        fact1 = D4_1[n] + Qr[np]*D3_z2[n];
         fact1 = TransAm[np][n]*TintTM[m, np]*fact1;
-        fact2 = D4_1[n] + Qs[np]*D3_1[n];
+        fact2 = D4_1[n] + Qs[np]*D3_z2[n];
         fact2 = TransBm[np][n]*UintTM[m, np]*fact2;
         sum1 = fact1 + fact2 + sum1;
 
-        fact3 = Zeta2_1[n] + Qr[np]*Zeta1_1[n];
+        fact3 = Zeta2_1[n] + Qr[np]*Zeta1_z2[n];
         fact3 = TransBm[np][n]*TintTM[m, np]*fact3;
-        fact4 = Zeta2_1[n] + Qs[np]*Zeta1_1[n];
+        fact4 = Zeta2_1[n] + Qs[np]*Zeta1_z2[n];
         fact4 = TransAm[np][n]*UintTM[m, np]*fact4;
         sum2 = sum2 + fact3 + fact4;
       }
@@ -1412,8 +1365,8 @@ namespace eccmie {
   // ............................................
   // DONE!!  The sum over m is now complete!!! .
   // ............................................
-  Qext = Qext1/x0/x0;
-  Qsca = Qsca1/x0/x0;
+  Qext = Qext1/x2/x2;
+  Qsca = Qsca1/x2/x2;
   Qabs = Qext - Qsca;
 
   // COMMENT THIS BLOCK OUT IF YOU DON'T WANT TO FIND
@@ -1421,7 +1374,7 @@ namespace eccmie {
   // IS VERY TIME CONSUMING (Use equation 61)
   alpha = ai;
   gg = find_g(nmax_, isize1, alpha, c_TE, d_TE, c_TM, d_TM);
-  gg = gg/x0/x0/Qsca;
+  gg = gg/x2/x2/Qsca;
   // .......................................................................
   // . Here's the meat of the problem.  We will calculate the amplitude    .
   // . scattering matrices for the fields that we've found.  The angle     .
@@ -1475,11 +1428,11 @@ namespace eccmie {
         // .........................................................
         // .  Calculate the corresponding pie and tau              .
         // .........................................................
-        tau = std::sqrt((n + m + 1.0)*(n - m))*legpol1[n];
+        tau = sqrt((n + m + 1.0)*(n - m))*legpol1[n];
         pie = tau;
-        tau = -(tau - std::sqrt((n + m)*(n - m + 1.0))*legpol[n])/2.0;
-        if (std::abs(x) > 0.5) {
-          pie = pie + std::sqrt((n + m)*(n - m + 1.0))*legpol[n];
+        tau = -(tau - sqrt((n + m)*(n - m + 1.0))*legpol[n])/2.0;
+        if (abs(x) > 0.5) {
+          pie = pie + sqrt((n + m)*(n - m + 1.0))*legpol[n];
           pie = pie*0.5/x;
         } else
           pie = m*legpol2[n]/sin(theta);
@@ -1605,11 +1558,11 @@ namespace eccmie {
   //**********************************************************************************//
   void EccentricMie::ExpanCoeffs() {
     if (!isScaCoeffsCalc_)
-      throw std::invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
+      throw invalid_argument("(ExpanCoeffs) You should calculate external coefficients first!");
 
     isExpCoeffsCalc_ = false;
 
-/*    std::complex<double> c_one(1.0, 0.0), c_zero(0.0, 0.0);
+/*    complex<double> c_one(1.0, 0.0), c_zero(0.0, 0.0);
 
     const int L = refractive_index_.size();
 
@@ -1632,20 +1585,20 @@ namespace eccmie {
       cln_[L][n] = c_one;
       dln_[L][n] = c_one;
 
-      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, std::real(aln_[L][n]), std::imag(aln_[L][n]), L, n, std::real(bln_[L][n]), std::imag(bln_[L][n]), L, n, std::real(cln_[L][n]), std::imag(cln_[L][n]), L, n, std::real(dln_[L][n]), std::imag(dln_[L][n]));
+      printf("aln_[%02i, %02i] = %g,%g; bln_[%02i, %02i] = %g,%g; cln_[%02i, %02i] = %g,%g; dln_[%02i, %02i] = %g,%g\n", L, n, real(aln_[L][n]), imag(aln_[L][n]), L, n, real(bln_[L][n]), imag(bln_[L][n]), L, n, real(cln_[L][n]), imag(cln_[L][n]), L, n, real(dln_[L][n]), imag(dln_[L][n]));
     }
 
-    std::vector<std::complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
-    std::vector<std::complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
-    std::complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
+    vector<complex<double> > D1z(nmax_ + 1), D1z1(nmax_ + 1), D3z(nmax_ + 1), D3z1(nmax_ + 1);
+    vector<complex<double> > Psiz(nmax_ + 1), Psiz1(nmax_ + 1), Zetaz(nmax_ + 1), Zetaz1(nmax_ + 1);
+    complex<double> denomZeta, denomPsi, T1, T2, T3, T4;
 
     auto& m = refractive_index_;
-    std::vector< std::complex<double> > refractive_index_host_(L);
+    vector< complex<double> > refractive_index_host_(L);
 
     for (int l = 0; l < L - 1; l++) refractive_index_host_[l] = m[l + 1];
-    refractive_index_host_[L - 1] = std::complex<double> (1.0, 0.0);
+    refractive_index_host_[L - 1] = complex<double> (1.0, 0.0);
 
-    std::complex<double> z, z1;
+    complex<double> z, z1;
     for (int l = L - 1; l >= 0; l--) {
       z = size_param_[l]*m[l];
       z1 = size_param_[l]*refractive_index_host_[l];
@@ -1684,10 +1637,10 @@ namespace eccmie {
     for (int n = 0; n < nmax_; ++n) {
 //      printf("n=%d, aln_=%g,%g,   bln_=%g,%g \n", n, real(aln_[0][n]), imag(aln_[0][n]),
 //	     real(bln_[0][n]), imag(bln_[0][n]));
-      if (std::abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of aln_[0][n]!");
-      if (std::abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
-      else throw std::invalid_argument("Unstable calculation of bln_[0][n]!");
+      if (abs(aln_[0][n]) < 1e-10) aln_[0][n] = 0.0;
+      else throw invalid_argument("Unstable calculation of aln_[0][n]!");
+      if (abs(bln_[0][n]) < 1e-10) bln_[0][n] = 0.0;
+      else throw invalid_argument("Unstable calculation of bln_[0][n]!");
     }*/
 
     isExpCoeffsCalc_ = true;
@@ -1703,21 +1656,21 @@ namespace eccmie {
   // was even or odd.  This routine is used in combination with Lubksb                //
   // to solve linear equations or invert a matrix.                                    //
   //**********************************************************************************//
-  void EccentricMie::LUDecomp(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
-                              std::vector<int>& indx, int d) {
+  void EccentricMie::LUDecomp(const int n, const int np, vector<vector<complex<double> > >& a,
+                              vector<int>& indx, int d) {
 
-    std::complex<double> suma, cdum, aamax;
-    std::vector<std::complex<double> > vv(nmax_);
-    std::complex<double> mytiny(1.0e-80,1.0e-80);
+    complex<double> suma, cdum, aamax;
+    vector<complex<double> > vv(nmax_);
+    complex<double> mytiny(1.0e-80,1.0e-80);
     int imax;
     d = 1.0;
 
     for (int i = 0; i < n; i++) {
-      aamax = std::complex<double>(0.0, 0.0);
+      aamax = complex<double>(0.0, 0.0);
       for (int j = 0; j < n; j++) {
-        if (std::abs(a[i][j]) > std::abs(aamax)) aamax = a[i][j];
+        if (abs(a[i][j]) > abs(aamax)) aamax = a[i][j];
       }
-      if (std::abs(aamax) == 0) throw std::invalid_argument("Singular matrix!!!");
+      if (abs(aamax) == 0) throw invalid_argument("Singular matrix!!!");
       vv[i] = 1.0/aamax;
     }
 
@@ -1730,7 +1683,7 @@ namespace eccmie {
         a[i][j] = suma;
       }
 
-      aamax = std::complex<double>(0.0, 0.0);
+      aamax = complex<double>(0.0, 0.0);
       for (int i = j - 1; i < n; i++) {
         suma = a[i][j];
         for (int k = 0; k < j - 1; k++)
@@ -1738,7 +1691,7 @@ namespace eccmie {
 
           a[i][j] = suma;
           cdum = vv[i]*suma;
-          if (std::abs(cdum) >= std::abs(aamax)) {
+          if (abs(cdum) >= abs(aamax)) {
             imax = i;
             aamax = cdum;
           }
@@ -1755,7 +1708,7 @@ namespace eccmie {
       }
 
       indx[j] = imax;
-      if(std::abs(a[j][j]) == 0) a[j][j] = mytiny;
+      if(abs(a[j][j]) == 0) a[j][j] = mytiny;
       if (j != n) {
         cdum = 1.0/a[j][j];
         for (int i = j; i < n; i++)
@@ -1776,10 +1729,10 @@ namespace eccmie {
   // can begin with many zero elements, so it is efficient for use in                 //
   // matrix inversion.                                                                //
   //**********************************************************************************//
-  void EccentricMie::LUSolve(const int n, const int np, std::vector<std::vector<std::complex<double> > >& a,
-                             std::vector<int>& indx, std::vector<std::complex<double> > b) {
+  void EccentricMie::LUSolve(const int n, const int np, vector<vector<complex<double> > >& a,
+                             vector<int>& indx, vector<complex<double> > b) {
 
-    std::complex<double> suma;
+    complex<double> suma;
     int ii = 0, ll;
 
     for (int i = 0; i < n; i++) {
@@ -1791,7 +1744,7 @@ namespace eccmie {
         for (int j = ii - 1; j< i - 1; j++)
           suma -= a[i][j]*b[j];
       } else {
-        if (std::abs(suma) != 0.0)  ii = i;
+        if (abs(suma) != 0.0)  ii = i;
       }
       b[i] = suma;
     }
@@ -1820,19 +1773,19 @@ namespace eccmie {
   //   E, H: Complex electric and magnetic fields                                     //
   //**********************************************************************************//
   void EccentricMie::calcField(const double Rho, const double Theta, const double Phi,
-                                std::vector<std::complex<double> >& E, std::vector<std::complex<double> >& H)  {
+                                vector<complex<double> >& E, vector<complex<double> >& H)  {
 
-    /*std::complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
-    std::vector<std::complex<double> > ipow = {c_one, c_i, -c_one, -c_i} // Vector containing precomputed integer powers of i to avoid computation
-    std::vector<std::complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
-    std::vector<std::complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
-    std::vector<std::complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
-    std::vector<double> Pi(nmax_), Tau(nmax_);
+    /*complex<double> c_zero(0.0, 0.0), c_i(0.0, 1.0), c_one(1.0, 0.0);
+    vector<complex<double> > ipow = {c_one, c_i, -c_one, -c_i} // Vector containing precomputed integer powers of i to avoid computation
+    vector<complex<double> > M3o1n(3), M3e1n(3), N3o1n(3), N3e1n(3);
+    vector<complex<double> > M1o1n(3), M1e1n(3), N1o1n(3), N1e1n(3);
+    vector<complex<double> > jn(nmax_ + 1), jnp(nmax_ + 1), h1n(nmax_ + 1), h1np(nmax_ + 1);
+    vector<double> Pi(nmax_), Tau(nmax_);
 
-    std::vector<std::complex<double> > Ei(3), Hi(3);
+    vector<complex<double> > Ei(3), Hi(3);
 
     int l = 0;  // Layer number
-    std::complex<double> ml;
+    complex<double> ml;
 
     // Initialize E and H
     for (int i = 0; i < 3; i++) {
@@ -1856,8 +1809,8 @@ namespace eccmie {
     sbesjh(Rho*ml, jn, jnp, h1n, h1np);
 
     // Calculate angular functions Pi and Tau
-    calcPiTau(std::cos(Theta), Pi, Tau);*/
-/*    printf("Thetd = %g, cos(Theta) = %g\n", Theta, std::cos(Theta));
+    calcPiTau(cos(Theta), Pi, Tau);*/
+/*    printf("Thetd = %g, cos(Theta) = %g\n", Theta, cos(Theta));
     printf("Pi:\n");
     for (auto p : Pi) printf("%11.4e\n",p);
     printf("Tau:\n");
@@ -1872,7 +1825,7 @@ namespace eccmie {
       calcSpherHarm(Rho, Theta, Phi, h1n[n1], h1np[n1], Pi[n], Tau[n], rn, M3o1n, M3e1n, N3o1n, N3e1n);
 
       // Total field in the lth layer: eqs. (1) and (2) in Yang, Appl. Opt., 42 (2003) 1710-1720
-      std::complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
+      complex<double> En = ipow[n1 % 4]*(rn + rn + 1.0)/(rn*rn + rn);
       for (int i = 0; i < 3; i++) {
         // electric field E [V m - 1] = EF*E0
         E[i] += En*(cln_[l][n]*M1o1n[i] - c_i*dln_[l][n]*N1e1n[i]
@@ -1886,13 +1839,13 @@ namespace eccmie {
       }
     }  // end of for all n
 
-    //printf("rho = %11.4e; angle_inc_ = %11.4eº; theta = %11.4eº; x[%i] = %11.4e; m[%i] = %11.4er%+10.5ei\n", Rho, Phi*180./PI_, Theta*180./PI_, l, size_param_[l], l, std::real(ml), std::imag(ml));
+    //printf("rho = %11.4e; angle_inc_ = %11.4eº; theta = %11.4eº; x[%i] = %11.4e; m[%i] = %11.4er%+10.5ei\n", Rho, Phi*180./PI_, Theta*180./PI_, l, size_param_[l], l, real(ml), imag(ml));
     // magnetic field
     double hffact = 1.0/(cc_*mu_);
     for (int i = 0; i < 3; i++) {
       H[i] = hffact*H[i];
       Hi[i] *= hffact;
-      printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, std::real(E[i]), std::imag(E[i]), i, std::real(H[i]), std::imag(H[i]));
+      printf("E[%i] = %10.5er%+10.5ei; H[%i] = %10.5er%+10.5ei\n", i, real(E[i]), imag(E[i]), i, real(H[i]), imag(H[i]));
     }*/
    }  // end of EccentricMie::calcField(...)
 
@@ -1928,8 +1881,8 @@ namespace eccmie {
     // Calculate expansion coefficients aln_,  bln_, cln_, and dln_
     ExpanCoeffs();
     // for (int i = 0; i < nmax_; ++i) {
-    //   printf("cln_[%i] = %11.4er%+10.5ei;  dln_[%i] = %11.4er%+10.5ei\n", i, std::real(cln_[0][i]), std::imag(cln_[0][i]),
-    // 	     i, std::real(dln_[0][i]), std::imag(dln_[0][i]));
+    //   printf("cln_[%i] = %11.4er%+10.5ei;  dln_[%i] = %11.4er%+10.5ei\n", i, real(cln_[0][i]), imag(cln_[0][i]),
+    // 	     i, real(dln_[0][i]), imag(dln_[0][i]));
     // }
 
 
@@ -1945,16 +1898,16 @@ namespace eccmie {
       const double& Zp = coords_[2][point];
 
       // Convert to spherical coordinates
-      Rho = std::sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
+      Rho = sqrt(pow2(Xp) + pow2(Yp) + pow2(Zp));
 
       // If Rho=0 Theta is undefined. Just set it to zero to avoid problems
-      Theta = (Rho > 0.0) ? std::acos(Zp/Rho) : 0.0;
+      Theta = (Rho > 0.0) ? acos(Zp/Rho) : 0.0;
 
       // If Xp=Yp=0 Phi is undefined. Just set it to zero to avoid problems
       if (Xp == 0.0)
-        Phi = (Yp != 0.0) ? std::asin(Yp/std::sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
+        Phi = (Yp != 0.0) ? asin(Yp/sqrt(pow2(Xp) + pow2(Yp))) : 0.0;
       else
-        Phi = std::acos(Xp/std::sqrt(pow2(Xp) + pow2(Yp)));
+        Phi = acos(Xp/sqrt(pow2(Xp) + pow2(Yp)));
 
       // Avoid convergence problems due to Rho too small
       if (Rho < 1e-5) Rho = 1e-5;
@@ -1968,7 +1921,7 @@ namespace eccmie {
       //*******************************************************//
 
       // This array contains the fields in spherical coordinates
-      std::vector<std::complex<double> > Es(3), Hs(3);
+      vector<complex<double> > Es(3), Hs(3);
 
       // Firstly the easiest case: the field outside the particle
       //      if (Rho >= GetSizeParameter()) {
@@ -1977,8 +1930,6 @@ namespace eccmie {
       calcField(Rho, Theta, Phi, Es, Hs);  //Should work fine both: inside and outside the particle
       //}
  { //Now, convert the fields back to cartesian coordinates
-        using std::sin;
-        using std::cos;
         E_[point][0] = sin(Theta)*cos(Phi)*Es[0] + cos(Theta)*cos(Phi)*Es[1] - sin(Phi)*Es[2];
         E_[point][1] = sin(Theta)*sin(Phi)*Es[0] + cos(Theta)*sin(Phi)*Es[1] + cos(Phi)*Es[2];
         E_[point][2] = cos(Theta)*Es[0] - sin(Theta)*Es[1];
