@@ -580,8 +580,8 @@ namespace eccmie {
   // Calculate an - equation (5)                                            //
   // ********************************************************************** //
   complex<double> EccentricMie::calc_an(int n, double XL, complex<double> Ha, complex<double> mL,
-                                              complex<double> PsiXL, complex<double> ZetaXL,
-                                              complex<double> PsiXLM1, complex<double> ZetaXLM1) {
+                                        complex<double> PsiXL, complex<double> ZetaXL,
+                                        complex<double> PsiXLM1, complex<double> ZetaXLM1) {
 
     complex<double> Num = (Ha/mL + n/XL)*PsiXL - PsiXLM1;
     complex<double> Denom = (Ha/mL + n/XL)*ZetaXL - ZetaXLM1;
@@ -594,8 +594,8 @@ namespace eccmie {
   // Calculate bn - equation (6)                                            //
   // ********************************************************************** //
   complex<double> EccentricMie::calc_bn(int n, double XL, complex<double> Hb, complex<double> mL,
-                                              complex<double> PsiXL, complex<double> ZetaXL,
-                                              complex<double> PsiXLM1, complex<double> ZetaXLM1) {
+                                        complex<double> PsiXL, complex<double> ZetaXL,
+                                        complex<double> PsiXLM1, complex<double> ZetaXLM1) {
 
     complex<double> Num = (mL*Hb + n/XL)*PsiXL - PsiXLM1;
     complex<double> Denom = (mL*Hb + n/XL)*ZetaXL - ZetaXLM1;
@@ -607,7 +607,8 @@ namespace eccmie {
   // Calculates S1 - equation (25a)                                         //
   // ********************************************************************** //
   complex<double> EccentricMie::calc_S1(int n, complex<double> an, complex<double> bn,
-                                              double Pi, double Tau) {
+                                        double Pi, double Tau) {
+
     return double(n + n + 1)*(Pi*an + Tau*bn)/double(n*n + n);
   }
 
@@ -617,7 +618,8 @@ namespace eccmie {
   // Pi and Tau)                                                            //
   // ********************************************************************** //
   complex<double> EccentricMie::calc_S2(int n, complex<double> an, complex<double> bn,
-                                              double Pi, double Tau) {
+                                        double Pi, double Tau) {
+
     return calc_S1(n, an, bn, Tau, Pi);
   }
 
@@ -635,8 +637,8 @@ namespace eccmie {
   //   D1, D3: Logarithmic derivatives of the Riccati-Bessel functions                //
   //**********************************************************************************//
   void EccentricMie::calcD1D3(const complex<double> z,
-                               vector<complex<double> >& D1,
-                               vector<complex<double> >& D3) {
+                              vector<complex<double> >& D1,
+                              vector<complex<double> >& D3) {
 
     // Downward recurrence for D1 - equations (16a) and (16b)
     D1[nmax_] = complex<double>(0.0, 0.0);
@@ -674,8 +676,8 @@ namespace eccmie {
   //   Psi, Zeta: Riccati-Bessel functions                                            //
   //**********************************************************************************//
   void EccentricMie::calcPsiZeta(complex<double> z,
-                                  vector<complex<double> >& Psi,
-                                  vector<complex<double> >& Zeta) {
+                                 vector<complex<double> >& Psi,
+                                 vector<complex<double> >& Zeta) {
 
     complex<double> c_i(0.0, 1.0);
     vector<complex<double> > D1(nmax_ + 1), D3(nmax_ + 1);
@@ -708,7 +710,7 @@ namespace eccmie {
   //   Pi, Tau: Angular functions Pi and Tau, as defined in equations (26a) - (26c)   //
   //**********************************************************************************//
   void EccentricMie::calcPiTau(const double& costheta,
-                                vector<vector<double> >& Pi, vector<vector<double> >& Tau) {
+                               vector<vector<double> >& Pi, vector<vector<double> >& Tau) {
 
     double sintheta = sqrt(1.0 - costheta*costheta);
 
@@ -762,10 +764,10 @@ namespace eccmie {
   //   Mo1n, Me1n, No1n, Ne1n: Complex vector spherical harmonics                     //
   //**********************************************************************************//
   void EccentricMie::calcSpherHarm(const double Rho, const double Theta, const double Phi,
-                                    const complex<double>& zn, const complex<double>& dzn,
-                                    const double& Pi, const double& Tau, const double& n,
-                                    vector<complex<double> >& Mo1n, vector<complex<double> >& Me1n,
-                                    vector<complex<double> >& No1n, vector<complex<double> >& Ne1n) {
+                                   const complex<double>& zn, const complex<double>& dzn,
+                                   const double& Pi, const double& Tau, const double& n,
+                                   vector<complex<double> >& Mo1n, vector<complex<double> >& Me1n,
+                                   vector<complex<double> >& No1n, vector<complex<double> >& Ne1n) {
 
     // using eq 4.50 in BH
     complex<double> c_zero(0.0, 0.0);
